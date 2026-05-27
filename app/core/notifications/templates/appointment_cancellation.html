@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annulation de rendez-vous</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fef2f2; }
+    .container { background: white; padding: 30px; border-radius: 8px; margin: 20px; }
+    .header { background: #ef4444; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; }
+    .body { padding: 20px; }
+    .refund-box { background: #f0fdf4; padding: 12px; border-radius: 6px; margin: 12px 0; }
+    .footer { color: #666; font-size: 12px; text-align: center; margin-top: 20px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Rendez-vous annulé</h1>
+  </div>
+  <div class="body">
+    <p>Bonjour <strong>{{ patient_name }}</strong>,</p>
+    <p>Votre rendez-vous <strong>{{ reference }}</strong> du {{ scheduled_at }} a été annulé.</p>
+    {% if refund_amount is defined and refund_amount and refund_amount > 0 %}
+    <div class="refund-box">
+      Un remboursement de <strong>{{ refund_amount }} XAF</strong> sera traité sous 3-5 jours ouvrés.
+    </div>
+    {% endif %}
+    {% if cancellation_reason is defined and cancellation_reason %}
+    <p><strong>Motif :</strong> {{ cancellation_reason }}</p>
+    {% endif %}
+    <p>Vous pouvez reprendre un nouveau rendez-vous depuis votre espace patient.</p>
+  </div>
+  <div class="footer">
+    <p>{{ app_name | default("Gestion Clinique") }} — Ne répondez pas à cet email</p>
+  </div>
+</div>
+</body>
+</html>

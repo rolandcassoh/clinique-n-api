@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rappel de rendez-vous</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fffbeb; }
+    .container { background: white; padding: 30px; border-radius: 8px; margin: 20px; }
+    .header { background: #f59e0b; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; }
+    .body { padding: 20px; }
+    .detail-row { padding: 8px 0; border-bottom: 1px solid #eee; }
+    .footer { color: #666; font-size: 12px; text-align: center; margin-top: 20px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>&#9200; Rappel : Rendez-vous demain</h1>
+  </div>
+  <div class="body">
+    <p>Bonjour <strong>{{ patient_name }}</strong>,</p>
+    <p>Rappel : vous avez un rendez-vous <strong>demain</strong> avec Dr. {{ doctor_name }}.</p>
+    <div class="detail-row"><strong>Date :</strong> {{ scheduled_at }}</div>
+    <div class="detail-row"><strong>Clinique :</strong> {{ clinic_name }}</div>
+    <div class="detail-row"><strong>Référence :</strong> {{ reference }}</div>
+    <br>
+    <p>Pour annuler, connectez-vous à votre espace patient.</p>
+  </div>
+  <div class="footer">
+    <p>{{ app_name | default("Gestion Clinique") }} — Ne répondez pas à cet email</p>
+  </div>
+</div>
+</body>
+</html>

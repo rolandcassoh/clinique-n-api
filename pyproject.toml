@@ -1,0 +1,99 @@
+[tool.poetry]
+name = "gestion-clinique-api"
+version = "0.1.0"
+description = "API FastAPI pour la gestion de clinique médicale"
+authors = ["Roland <roland171993@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "app" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115"
+uvicorn = { extras = ["standard"], version = "^0.32" }
+gunicorn = "^23.0"
+pydantic = "^2.10"
+pydantic-settings = "^2.7"
+email-validator = "^2.2"
+sqlalchemy = { extras = ["asyncio"], version = "^2.0" }
+alembic = "^1.14"
+asyncmy = "^0.2"
+python-jose = { extras = ["cryptography"], version = "^3.3" }
+passlib = { extras = ["bcrypt"], version = "^1.7" }
+python-multipart = "^0.0.19"
+authlib = "^1.3"
+pyotp = "^2.9"
+redis = { extras = ["hiredis"], version = "^5.2" }
+celery = { extras = ["redis"], version = "^5.4" }
+httpx = "^0.28"
+structlog = "^24.4"
+prometheus-fastapi-instrumentator = "^7.0"
+slowapi = "^0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3"
+pytest-asyncio = "^0.24"
+pytest-cov = "^6.0"
+factory-boy = "^3.3"
+faker = "^33.0"
+aiosqlite = "^0.20"
+mypy = "^1.13"
+ruff = "^0.8"
+bandit = { extras = ["toml"], version = "^1.8" }
+pre-commit = "^4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "aiosqlite>=0.22.1",
+    "asyncmy>=0.2.11",
+    "authlib>=1.7.2",
+    "email-validator>=2.3.0",
+    "fastapi>=0.136.3",
+    "gunicorn>=26.0.0",
+    "httpx>=0.28.1",
+    "passlib>=1.7.4",
+    "prometheus-fastapi-instrumentator>=7.1.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.1",
+    "pyotp>=2.9.0",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "pytest-cov>=7.1.0",
+    "python-jose>=3.5.0",
+    "python-multipart>=0.0.29",
+    "qrcode>=8.2",
+    "redis>=7.4.0",
+    "slowapi>=0.1.9",
+    "sqlalchemy[asyncio]>=2.0.50",
+    "structlog>=25.5.0",
+    "uvicorn>=0.48.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["B008", "B904"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing --cov-report=html"
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+skips = ["B101"]

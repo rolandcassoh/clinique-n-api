@@ -1,0 +1,82 @@
+name: Load Tests (Locust)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "URL cible (ex: https://staging-api.clinique.app)"
+        required: true
+        default: "http://localhost:8000"
+      users:
+        description: "Nombre d'utilisateurs simultanés"
+        required: true
+        default: "100"
+      duration:
+        description: "Durée du test"
+        required: true
+        default: "3m"
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Locust
+        run: pip install locust
+
+      - name: Run load test
+        run: |
+          mkdir -p results
+          locust --headless \
+            --users ${{ github.event.inputs.users }} \
+            --spawn-rate 10 \
+            --host ${{ github.event.inputs.target_url }} \
+            --run-time ${{ github.event.inputs.duration }} \
+            --csv results/load_test \
+            --html results/load_test_report.html \
+            -f tests/load/locustfile.py
+
+      - name: Check performance thresholds
+        run: |
+          python3 - << 'EOF'
+          import csv, sys
+
+          with open("results/load_test_stats.csv") as f:
+              rows = list(csv.DictReader(f))
+
+          failures = 0
+          for row in rows:
+              if row["Name"] == "Aggregated":
+                  p99 = float(row.get("99%", 0))
+                  request_count = max(float(row.get("Request Count", 1)), 1)
+                  failure_count = float(row.get("Failure Count", 0))
+                  error_pct = failure_count / request_count * 100
+
+                  print(f"P99 latency : {p99:.0f}ms (seuil : 2000ms)")
+                  print(f"Error rate  : {error_pct:.2f}% (seuil : 1%)")
+
+                  if p99 > 2000:
+                      print("ECHEC : P99 > 2000ms !")
+                      failures += 1
+                  if error_pct > 1:
+                      print("ECHEC : Error rate > 1% !")
+                      failures += 1
+
+          sys.exit(failures)
+          EOF
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results-${{ github.run_id }}
+          path: results/
+          retention-days: 30

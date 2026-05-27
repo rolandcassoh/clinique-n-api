@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirmation de rendez-vous</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f5f5f5; }
+    .container { background: white; padding: 30px; border-radius: 8px; margin: 20px; }
+    .header { background: #2563eb; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; }
+    .body { padding: 20px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .footer { color: #666; font-size: 12px; text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee; }
+    .btn { background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>&#10003; Rendez-vous confirmé</h1>
+  </div>
+  <div class="body">
+    <p>Bonjour <strong>{{ patient_name }}</strong>,</p>
+    <p>Votre rendez-vous a été confirmé avec succès.</p>
+    <div class="detail-row"><span>Référence</span><strong>{{ reference }}</strong></div>
+    <div class="detail-row"><span>Médecin</span><strong>Dr. {{ doctor_name }}</strong></div>
+    <div class="detail-row"><span>Clinique</span><span>{{ clinic_name }}</span></div>
+    <div class="detail-row"><span>Date et heure</span><strong>{{ scheduled_at }}</strong></div>
+    <div class="detail-row"><span>Montant</span><span>{{ amount }} XAF</span></div>
+    <br>
+    <p>Merci de vous présenter 10 minutes avant votre rendez-vous.</p>
+  </div>
+  <div class="footer">
+    <p>{{ app_name }} — Ne répondez pas à cet email</p>
+  </div>
+</div>
+</body>
+</html>
