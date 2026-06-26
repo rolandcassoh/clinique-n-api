@@ -14,34 +14,34 @@ from app.database import get_db
 from app.shared.exceptions.domain import DomainException
 
 # Imports des modèles pour créer les tables
-import app.modules.world.infrastructure.models  # noqa: F401
+import app.modules.monde.infrastructure.models  # noqa: F401
 import app.modules.faq.infrastructure.models  # noqa: F401
 import app.modules.blog.infrastructure.models  # noqa: F401
 import app.modules.page.infrastructure.models  # noqa: F401
-import app.modules.tag.infrastructure.models  # noqa: F401
-import app.modules.currency.infrastructure.models  # noqa: F401
-import app.modules.language.infrastructure.models  # noqa: F401
+import app.modules.etiquette.infrastructure.models  # noqa: F401
+import app.modules.devise.infrastructure.models  # noqa: F401
+import app.modules.langue.infrastructure.models  # noqa: F401
 import app.modules.slider.infrastructure.models  # noqa: F401
-import app.modules.constant.infrastructure.models  # noqa: F401
+import app.modules.constante.infrastructure.models  # noqa: F401
 import app.modules.auth.infrastructure.models  # noqa: F401  — crée la table users
 import app.modules.service.infrastructure.models  # noqa: F401
-import app.modules.request_service.infrastructure.models  # noqa: F401
-import app.modules.logistic.infrastructure.models  # noqa: F401
+import app.modules.demande_service.infrastructure.models  # noqa: F401
+import app.modules.logistique.infrastructure.models  # noqa: F401
 
 from app.database import Base  # Doit être importé APRÈS les models
 
-from app.modules.world.api.router import router as world_router
-from app.modules.faq.api.router import router as faq_router
-from app.modules.blog.api.router import router as blog_router
-from app.modules.page.api.router import router as page_router
-from app.modules.tag.api.router import router as tag_router
-from app.modules.currency.api.router import router as currency_router
-from app.modules.language.api.router import router as language_router
-from app.modules.slider.api.router import router as slider_router
-from app.modules.constant.api.router import router as constant_router
-from app.modules.service.api.router import router as service_router
-from app.modules.request_service.api.router import router as request_service_router
-from app.modules.logistic.api.router import router as logistic_router
+from app.modules.monde.api.routeur import router as world_router
+from app.modules.faq.api.routeur import router as faq_router
+from app.modules.blog.api.routeur import router as blog_router
+from app.modules.page.api.routeur import router as page_router
+from app.modules.etiquette.api.routeur import router as tag_router
+from app.modules.devise.api.routeur import router as currency_router
+from app.modules.langue.api.routeur import router as language_router
+from app.modules.slider.api.routeur import router as slider_router
+from app.modules.constante.api.routeur import router as constant_router
+from app.modules.service.api.routeur import router as service_router
+from app.modules.demande_service.api.routeur import router as request_service_router
+from app.modules.logistique.api.routeur import router as logistic_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 

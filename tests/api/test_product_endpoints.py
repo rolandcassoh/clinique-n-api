@@ -12,10 +12,10 @@ from app.shared.exceptions.domain import DomainException
 
 # Import des modèles nécessaires pour créer les tables (ordre important)
 import app.modules.auth.infrastructure.models  # noqa: F401 — users table
-import app.modules.product.infrastructure.models  # noqa: F401
+import app.modules.produit.infrastructure.models  # noqa: F401
 
-from app.modules.product.api.router import router as product_router
-from app.modules.product.infrastructure.models import (
+from app.modules.produit.api.routeur import router as product_router
+from app.modules.produit.infrastructure.modeles import (
     BrandModel,
     ProductCategoryModel,
     ProductModel,
@@ -292,7 +292,7 @@ class TestListCategories:
         from datetime import datetime
         # Récupère le parent existant
         from sqlalchemy import select
-        from app.modules.product.infrastructure.models import ProductCategoryModel as PCM
+        from app.modules.produit.infrastructure.modeles import ProductCategoryModel as PCM
         result = await db.execute(select(PCM).where(PCM.slug == "medicaments"))
         parent = result.scalar_one_or_none()
         if parent is None:

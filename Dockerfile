@@ -1,9 +1,9 @@
-FROM python:3.12-slim AS base
+FROM python:3.12.8-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    POETRY_VERSION=1.8.4 \
+    POETRY_VERSION=1.8.5 \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_CREATE=false
 

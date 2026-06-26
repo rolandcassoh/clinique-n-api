@@ -27,13 +27,13 @@ async def notify_appointment_confirmed(
     patient_email: str,
     context: dict,
 ) -> None:
-    """Notification multi-canal : push Firebase + email."""
+    """Notification multi-canal : push Firebase + courriel."""
     if patient_fcm_token:
         await _firebase.send_push(
             patient_fcm_token,
             PushPayload(
-                title="Rendez-vous confirmé ✅",
-                body=f"Votre RDV du {context.get('scheduled_at', '')} est confirmé",
+                titre="Rendez-vous confirmé ✅",
+                body=f"Votre RDV du {context.get('programme_le', '')} est confirmé",
                 data={
                     "type": "appointment_confirmed",
                     "reference": context.get("reference", ""),
@@ -53,12 +53,12 @@ async def notify_appointment_cancelled(
     patient_email: str,
     context: dict,
 ) -> None:
-    """Notification multi-canal : push Firebase + email (annulation)."""
+    """Notification multi-canal : push Firebase + courriel (annulation)."""
     if patient_fcm_token:
         await _firebase.send_push(
             patient_fcm_token,
             PushPayload(
-                title="Rendez-vous annulé ❌",
+                titre="Rendez-vous annulé ❌",
                 body=f"Votre RDV {context.get('reference', '')} a été annulé",
                 data={"type": "appointment_cancelled"},
             ),
@@ -81,8 +81,8 @@ async def notify_appointment_reminder(
         await _firebase.send_push(
             patient_fcm_token,
             PushPayload(
-                title="Rappel rendez-vous ⏰",
-                body=f"Votre RDV est demain : {context.get('scheduled_at', '')}",
+                titre="Rappel rendez-vous ⏰",
+                body=f"Votre RDV est demain : {context.get('programme_le', '')}",
                 data={
                     "type": "appointment_reminder",
                     "reference": context.get("reference", ""),
@@ -111,7 +111,7 @@ async def notify_otp(user_email: str, context: dict) -> None:
     """Email de code OTP."""
     await _email_service.send(
         to=user_email,
-        subject=f"Votre code de vérification : {context.get('otp_code', '')}",
+        subject=f"Votre code de vérification : {context.get('code_otp', '')}",
         template_name="otp_verification",
         context=context,
     )

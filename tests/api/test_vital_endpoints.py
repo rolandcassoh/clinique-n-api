@@ -13,9 +13,9 @@ from app.database import get_db, Base
 from app.shared.exceptions.domain import DomainException
 
 import app.modules.auth.infrastructure.models  # noqa: F401
-import app.modules.vital.infrastructure.models  # noqa: F401
+import app.modules.signe_vital.infrastructure.models  # noqa: F401
 
-from app.modules.vital.api.router import router as vital_router
+from app.modules.signe_vital.api.routeur import router as vital_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)

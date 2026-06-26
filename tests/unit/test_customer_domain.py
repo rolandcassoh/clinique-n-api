@@ -4,15 +4,15 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.modules.customer.application.use_cases import (
+from app.modules.client.application.cas_utilisation import (
     CreateFamilyMemberUseCase,
     DeleteFamilyMemberUseCase,
     GetCustomerProfileUseCase,
     UpdateCustomerProfileUseCase,
     UpdateFamilyMemberUseCase,
 )
-from app.modules.customer.domain.entities import CustomerProfile, FamilyMember
-from app.modules.customer.domain.exceptions import (
+from app.modules.client.domain.entites import CustomerProfile, FamilyMember
+from app.modules.client.domain.exceptions import (
     CustomerProfileNotFoundError,
     FamilyMemberAccessDeniedError,
     FamilyMemberNotFoundError,

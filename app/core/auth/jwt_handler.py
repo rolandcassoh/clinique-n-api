@@ -14,7 +14,7 @@ class JWTHandler:
     @classmethod
     def create_access_token(
         cls,
-        user_id: int,
+        id_utilisateur: int,
         roles: list[str],
         extra_claims: dict[str, Any] | None = None,
     ) -> str:
@@ -22,7 +22,7 @@ class JWTHandler:
             minutes=settings.jwt_access_token_expire_minutes
         )
         payload: dict[str, Any] = {
-            "sub": str(user_id),
+            "sub": str(id_utilisateur),
             "type": "access",
             "roles": roles,
             "iat": datetime.now(UTC),
@@ -33,12 +33,12 @@ class JWTHandler:
         return jwt.encode(payload, cls._secret, algorithm=cls._algorithm)
 
     @classmethod
-    def create_refresh_token(cls, user_id: int) -> str:
+    def create_refresh_token(cls, id_utilisateur: int) -> str:
         expire = datetime.now(UTC) + timedelta(
             days=settings.jwt_refresh_token_expire_days
         )
         payload: dict[str, Any] = {
-            "sub": str(user_id),
+            "sub": str(id_utilisateur),
             "type": "refresh",
             "iat": datetime.now(UTC),
             "exp": expire,
@@ -46,26 +46,26 @@ class JWTHandler:
         return jwt.encode(payload, cls._secret, algorithm=cls._algorithm)
 
     @classmethod
-    def decode(cls, token: str) -> dict[str, Any]:
-        return jwt.decode(token, cls._secret, algorithms=[cls._algorithm])
+    def decode(cls, jeton: str) -> dict[str, Any]:
+        return jwt.decode(jeton, cls._secret, algorithms=[cls._algorithm])
 
     @classmethod
-    def decode_access_token(cls, token: str) -> dict[str, Any]:
-        payload = cls.decode(token)
+    def decode_access_token(cls, jeton: str) -> dict[str, Any]:
+        payload = cls.decode(jeton)
         if payload.get("type") != "access":
-            raise JWTError("Not an access token")
+            raise JWTError("Not an access jeton")
         return payload
 
     @classmethod
-    def decode_refresh_token(cls, token: str) -> dict[str, Any]:
-        payload = cls.decode(token)
+    def decode_refresh_token(cls, jeton: str) -> dict[str, Any]:
+        payload = cls.decode(jeton)
         if payload.get("type") != "refresh":
-            raise JWTError("Not a refresh token")
+            raise JWTError("Not a refresh jeton")
         return payload
 
     @staticmethod
-    def hash_token(token: str) -> str:
-        return hashlib.sha256(token.encode()).hexdigest()
+    def hash_token(jeton: str) -> str:
+        return hashlib.sha256(jeton.encode()).hexdigest()
 
     @staticmethod
     def remaining_ttl_seconds(payload: dict[str, Any]) -> int:

@@ -33,17 +33,17 @@ class ServiceReviewNotFoundError(EntityNotFoundError):
 
 
 class DuplicateReviewError(ConflictError):
-    def __init__(self, user_id: int, service_id: int) -> None:
+    def __init__(self, id_utilisateur: int, id_service: int) -> None:
         super().__init__(
-            f"User {user_id} already has a review for service {service_id}."
+            f"L'utilisateur {id_utilisateur} a déjà soumis un avis pour le service {id_service}."
         )
 
 
 class ServiceSlugConflictError(ConflictError):
-    def __init__(self, slug: str) -> None:
-        super().__init__(f"A service with slug '{slug}' already exists.")
+    def __init__(self, identifiant_url: str) -> None:
+        super().__init__(f"Un service avec le identifiant_url '{identifiant_url}' existe déjà.")
 
 
 class CategorySlugConflictError(ConflictError):
-    def __init__(self, slug: str) -> None:
-        super().__init__(f"A category with slug '{slug}' already exists.")
+    def __init__(self, identifiant_url: str) -> None:
+        super().__init__(f"Une catégorie avec le identifiant_url '{identifiant_url}' existe déjà.")

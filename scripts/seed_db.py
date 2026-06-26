@@ -32,10 +32,10 @@ async def seed() -> None:
         result = await session.execute(text("SELECT COUNT(*) FROM users"))
         count = result.scalar()
         if count and count > 0:
-            print(f"Base déjà seedée ({count} users). Aucune action.")
+            print(f"Base déjà initialisée ({count} utilisateurs). Aucune action.")
             return
 
-        print("Seeding de la base de données...")
+        print("Initialisation de la base de données...")
 
         # Hash bcrypt pour 'secret' — à remplacer par passlib en production
         password_hash = "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW"
@@ -116,8 +116,8 @@ async def seed() -> None:
 
         await session.commit()
 
-    print("Seeding termine avec succes.")
-    print("  -> Users : admin@clinique.app / doctor1@clinique.app / patient1@clinique.app")
+    print("Initialisation terminée avec succès.")
+    print("  -> Utilisateurs : admin@clinique.app / doctor1@clinique.app / patient1@clinique.app")
     print("  -> Mot de passe (dev) : 'secret'")
 
 

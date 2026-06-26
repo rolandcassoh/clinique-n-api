@@ -2,7 +2,7 @@ import factory
 from faker import Faker
 
 from app.core.auth.password import hash_password
-from app.modules.auth.infrastructure.models import UserModel
+from app.modules.auth.infrastructure.modeles import UserModel
 
 _fake = Faker("fr_FR")
 

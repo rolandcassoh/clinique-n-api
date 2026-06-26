@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from app.modules.world.domain.entities import City, Country, State
+from app.modules.monde.domain.entites import City, Country, State
 from app.shared.schemas.pagination import Page, PaginationParams
 
 

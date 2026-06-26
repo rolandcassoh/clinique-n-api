@@ -15,7 +15,7 @@ class PaginationParams(BaseModel):
 
 
 class Page(BaseModel, Generic[T]):
-    """Réponse paginée générique."""
+    """Réponse paginée générique utilisée dans toutes les listes."""
 
     model_config = ConfigDict(from_attributes=True)
 

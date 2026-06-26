@@ -5,56 +5,56 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PageSchema(BaseModel):
-    """Schema de liste — sans content (allège la réponse)."""
+    """Schema de liste — sans contenu (allège la réponse)."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    title: str
-    slug: str
-    meta_title: str | None
+    titre: str
+    identifiant_url: str
+    titre_meta: str | None
     meta_description: str | None
-    is_published: bool
+    est_publie: bool
     created_at: datetime
     updated_at: datetime
 
 
 class PageDetailSchema(BaseModel):
-    """Schema de détail — avec content complet."""
+    """Schema de détail — avec contenu complet."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    title: str
-    slug: str
-    content: str
-    meta_title: str | None
+    titre: str
+    identifiant_url: str
+    contenu: str
+    titre_meta: str | None
     meta_description: str | None
-    is_published: bool
+    est_publie: bool
     created_at: datetime
     updated_at: datetime
 
 
 # ---------------------------------------------------------------------------
-# Requests
+# Requêtes
 # ---------------------------------------------------------------------------
 
 
 class PageCreateRequest(BaseModel):
-    title: str = Field(..., min_length=3, max_length=255)
-    slug: str = Field(..., min_length=3, max_length=255, pattern=r"^[a-z0-9-]+$")
-    content: str = Field(..., min_length=1)
-    meta_title: str | None = Field(default=None, max_length=255)
+    titre: str = Field(..., min_length=3, max_length=255)
+    identifiant_url: str = Field(..., min_length=3, max_length=255, pattern=r"^[a-z0-9-]+$")
+    contenu: str = Field(..., min_length=1)
+    titre_meta: str | None = Field(default=None, max_length=255)
     meta_description: str | None = None
-    is_published: bool = True
+    est_publie: bool = True
 
 
 class PageUpdateRequest(BaseModel):
-    title: str | None = Field(default=None, min_length=3, max_length=255)
-    slug: str | None = Field(
+    titre: str | None = Field(default=None, min_length=3, max_length=255)
+    identifiant_url: str | None = Field(
         default=None, min_length=3, max_length=255, pattern=r"^[a-z0-9-]+$"
     )
-    content: str | None = Field(default=None, min_length=1)
-    meta_title: str | None = Field(default=None, max_length=255)
+    contenu: str | None = Field(default=None, min_length=1)
+    titre_meta: str | None = Field(default=None, max_length=255)
     meta_description: str | None = None
-    is_published: bool | None = None
+    est_publie: bool | None = None

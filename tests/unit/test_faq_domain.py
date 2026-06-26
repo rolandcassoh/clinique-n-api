@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytest
 
-from app.modules.faq.domain.entities import FAQ
+from app.modules.faq.domain.entites import FAQ
 from app.modules.faq.domain.exceptions import FAQNotFoundError
 
 

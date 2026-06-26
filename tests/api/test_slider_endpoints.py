@@ -3,7 +3,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.slider.infrastructure.models import SliderModel  # noqa: F401
+from app.modules.slider.infrastructure.modeles import SliderModel  # noqa: F401
 
 
 @pytest.mark.asyncio

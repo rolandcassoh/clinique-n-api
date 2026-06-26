@@ -29,25 +29,25 @@ class PayPalAdapter(PaymentPort):
 
     async def create_payment_intent(
         self,
-        amount: Decimal,
-        currency: str,
+        montant: Decimal,
+        devise: str,
         metadata: Optional[dict] = None,
     ) -> PaymentIntent:
         if not self._is_configured():
             return PaymentIntent(
                 id="PAYPAL-ORDER-STUB",
-                amount=amount,
-                currency=currency,
-                status="CREATED",
+                montant=montant,
+                devise=devise,
+                statut="CREATED",
                 client_secret=None,
             )
         # Implémentation réelle via PayPal REST API v2
         # À compléter avec paypalrestsdk ou appels HTTP directs
         return PaymentIntent(
             id="PAYPAL-ORDER-STUB",
-            amount=amount,
-            currency=currency,
-            status="CREATED",
+            montant=montant,
+            devise=devise,
+            statut="CREATED",
             client_secret=None,
         )
 
@@ -55,47 +55,47 @@ class PayPalAdapter(PaymentPort):
         if not self._is_configured():
             return PaymentIntent(
                 id=payment_intent_id,
-                amount=Decimal("0"),
-                currency="USD",
-                status="COMPLETED",
+                montant=Decimal("0"),
+                devise="USD",
+                statut="COMPLETED",
                 client_secret=None,
             )
         return PaymentIntent(
             id=payment_intent_id,
-            amount=Decimal("0"),
-            currency="USD",
-            status="COMPLETED",
+            montant=Decimal("0"),
+            devise="USD",
+            statut="COMPLETED",
             client_secret=None,
         )
 
     async def refund(
-        self, payment_intent_id: str, amount: Optional[Decimal] = None
+        self, payment_intent_id: str, montant: Optional[Decimal] = None
     ) -> RefundResult:
         if not self._is_configured():
             return RefundResult(
                 id=f"REFUND-PAYPAL-{payment_intent_id}",
-                amount=amount or Decimal("0"),
-                status="refunded",
+                montant=montant or Decimal("0"),
+                statut="refunded",
             )
         return RefundResult(
             id=f"REFUND-PAYPAL-{payment_intent_id}",
-            amount=amount or Decimal("0"),
-            status="refunded",
+            montant=montant or Decimal("0"),
+            statut="refunded",
         )
 
     async def get_payment(self, payment_intent_id: str) -> PaymentIntent:
         if not self._is_configured():
             return PaymentIntent(
                 id=payment_intent_id,
-                amount=Decimal("0"),
-                currency="USD",
-                status="COMPLETED",
+                montant=Decimal("0"),
+                devise="USD",
+                statut="COMPLETED",
                 client_secret=None,
             )
         return PaymentIntent(
             id=payment_intent_id,
-            amount=Decimal("0"),
-            currency="USD",
-            status="COMPLETED",
+            montant=Decimal("0"),
+            devise="USD",
+            statut="COMPLETED",
             client_secret=None,
         )

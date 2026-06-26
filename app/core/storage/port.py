@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 
 class StoragePort(ABC):
     @abstractmethod
-    async def save(self, path: str, content: bytes, content_type: str = "application/octet-stream") -> str:
-        """Persist content at path and return the public URL."""
+    async def save(self, path: str, contenu: bytes, content_type: str = "application/octet-stream") -> str:
+        """Persist contenu at path and return the public URL."""
 
     @abstractmethod
     async def delete(self, path: str) -> None:

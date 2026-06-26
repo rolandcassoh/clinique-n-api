@@ -3,17 +3,17 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class RegisterCommand:
-    name: str
-    email: str
-    password: str
-    username: str | None = None
-    phone: str | None = None
+    nom: str
+    courriel: str
+    mot_de_passe: str
+    nom_utilisateur: str | None = None
+    telephone: str | None = None
 
 
 @dataclass(frozen=True)
 class LoginCommand:
-    email: str
-    password: str
+    courriel: str
+    mot_de_passe: str
 
 
 @dataclass(frozen=True)
@@ -23,27 +23,27 @@ class RefreshTokenCommand:
 
 @dataclass(frozen=True)
 class ForgotPasswordCommand:
-    email: str
+    courriel: str
 
 
 @dataclass(frozen=True)
 class ResetPasswordCommand:
-    token: str
+    jeton: str
     new_password: str
 
 
 @dataclass(frozen=True)
 class VerifyOtpCommand:
-    user_id: int
-    otp_code: str
+    id_utilisateur: int
+    code_otp: str
 
 
 @dataclass(frozen=True)
 class SetupTotpCommand:
-    user_id: int
+    id_utilisateur: int
 
 
 @dataclass(frozen=True)
 class VerifyTotpCommand:
-    user_id: int
-    token: str
+    id_utilisateur: int
+    jeton: str

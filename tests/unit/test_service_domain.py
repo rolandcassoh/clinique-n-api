@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.modules.service.domain.entities import (
+from app.modules.service.domain.entites import (
     Service,
     ServicePackage,
     ServiceReview,

@@ -18,10 +18,10 @@ from app.core.auth.jwt_handler import JWTHandler
 from app.shared.exceptions.domain import DomainException
 
 # Importer le modèle pour créer les tables
-import app.modules.appointment.infrastructure.models  # noqa: F401
+import app.modules.rendez_vous.infrastructure.models  # noqa: F401
 
-from app.modules.appointment.api.router import router as appointment_router
-from app.modules.appointment.api.webhooks import webhook_router
+from app.modules.rendez_vous.api.routeur import router as appointment_router
+from app.modules.rendez_vous.api.webhooks import webhook_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)

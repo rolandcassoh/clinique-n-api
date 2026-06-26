@@ -35,48 +35,48 @@ class PaystackAdapter(PaymentPort):
 
     async def create_payment_intent(
         self,
-        amount: Decimal,
-        currency: str,
+        montant: Decimal,
+        devise: str,
         metadata: Optional[dict] = None,
     ) -> PaymentIntent:
         """
         Initialise une transaction Paystack.
         Retourne un PaymentIntent dont client_secret contient l'authorization_url.
-        amount en unités de base : kobo (NGN), pesewas (GHS), XAF directement.
+        Le montant est en unités de base : kobo (NGN), pesewas (GHS), XAF directement.
         """
         meta = metadata or {}
 
         if not self._secret_key:
-            ref = f"test_ref_{meta.get('appointment_id', 'unknown')}"
+            reference = f"test_ref_{meta.get('id_rendez_vous', 'inconnu')}"
             return PaymentIntent(
-                id=ref,
-                amount=amount,
-                currency=currency,
-                status="pending",
+                id=reference,
+                montant=montant,
+                devise=devise,
+                statut="pending",
                 client_secret="https://checkout.paystack.com/test",
             )
 
         async with httpx.AsyncClient() as client:
-            response = await client.post(
+            reponse = await client.post(
                 f"{self.BASE_URL}/transaction/initialize",
                 json={
-                    "amount": int(amount * 100),
-                    "currency": currency.upper(),
-                    "email": meta.get("patient_email", "patient@clinique.app"),
+                    "montant": int(montant * 100),
+                    "devise": devise.upper(),
+                    "courriel": meta.get("patient_email", "patient@clinique.app"),
                     "metadata": meta,
                     "callback_url": meta.get("callback_url", ""),
                 },
                 headers=self._headers,
                 timeout=30.0,
             )
-            response.raise_for_status()
-            data = response.json()["data"]
+            reponse.raise_for_status()
+            donnees = reponse.json()["data"]
             return PaymentIntent(
-                id=data["reference"],
-                amount=amount,
-                currency=currency.upper(),
-                status="pending",
-                client_secret=data["authorization_url"],
+                id=donnees["reference"],
+                montant=montant,
+                devise=devise.upper(),
+                statut="pending",
+                client_secret=donnees["authorization_url"],
             )
 
     async def confirm_payment(self, payment_intent_id: str) -> PaymentIntent:
@@ -84,58 +84,58 @@ class PaystackAdapter(PaymentPort):
         if not self._secret_key:
             return PaymentIntent(
                 id=payment_intent_id,
-                amount=Decimal("0"),
-                currency="XAF",
-                status="succeeded",
+                montant=Decimal("0"),
+                devise="XAF",
+                statut="succeeded",
                 client_secret=None,
             )
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(
+            reponse = await client.get(
                 f"{self.BASE_URL}/transaction/verify/{payment_intent_id}",
                 headers=self._headers,
                 timeout=30.0,
             )
-            response.raise_for_status()
-            data = response.json()["data"]
-            status = "succeeded" if data["status"] == "success" else "failed"
+            reponse.raise_for_status()
+            donnees = reponse.json()["data"]
+            statut = "succeeded" if donnees["statut"] == "success" else "failed"
             return PaymentIntent(
-                id=str(data["id"]),
-                amount=Decimal(str(data["amount"])) / 100,
-                currency=data["currency"],
-                status=status,
+                id=str(donnees["id"]),
+                montant=Decimal(str(donnees["montant"])) / 100,
+                devise=donnees["devise"],
+                statut=statut,
                 client_secret=None,
             )
 
     async def refund(
-        self, payment_intent_id: str, amount: Optional[Decimal] = None
+        self, payment_intent_id: str, montant: Optional[Decimal] = None
     ) -> RefundResult:
         """Émet un remboursement partiel ou total via Paystack."""
         if not self._secret_key:
             return RefundResult(
                 id=f"re_{payment_intent_id}",
-                amount=amount or Decimal("0"),
-                status="refunded",
+                montant=montant or Decimal("0"),
+                statut="refunded",
             )
 
-        payload: dict = {"transaction": payment_intent_id}
-        if amount is not None:
-            payload["amount"] = int(amount * 100)
+        corps: dict = {"transaction": payment_intent_id}
+        if montant is not None:
+            corps["montant"] = int(montant * 100)
 
         async with httpx.AsyncClient() as client:
-            response = await client.post(
+            reponse = await client.post(
                 f"{self.BASE_URL}/refund",
-                json=payload,
+                json=corps,
                 headers=self._headers,
                 timeout=30.0,
             )
-            response.raise_for_status()
-            data = response.json()["data"]
-            refunded_amount = Decimal(str(data.get("amount", 0))) / 100
+            reponse.raise_for_status()
+            donnees = reponse.json()["data"]
+            montant_rembourse = Decimal(str(donnees.get("montant", 0))) / 100
             return RefundResult(
-                id=str(data.get("id", "")),
-                amount=refunded_amount,
-                status="refunded",
+                id=str(donnees.get("id", "")),
+                montant=montant_rembourse,
+                statut="refunded",
             )
 
     async def get_payment(self, payment_intent_id: str) -> PaymentIntent:
@@ -147,9 +147,9 @@ class PaystackAdapter(PaymentPort):
         if not self._secret_key:
             return json.loads(payload)
 
-        computed = hmac.new(
+        signature_calculee = hmac.new(
             self._secret_key.encode(), payload, digestmod=hashlib.sha512
         ).hexdigest()
-        if not hmac.compare_digest(computed, signature):
-            raise ValueError("Invalid Paystack webhook signature")
+        if not hmac.compare_digest(signature_calculee, signature):
+            raise ValueError("Signature de webhook Paystack invalide")
         return json.loads(payload)

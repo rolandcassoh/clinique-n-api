@@ -6,9 +6,9 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import des modèles pour créer les tables
-import app.modules.request_service.infrastructure.models  # noqa: F401
+import app.modules.demande_service.infrastructure.models  # noqa: F401
 
-from app.modules.request_service.infrastructure.models import RequestServiceModel
+from app.modules.demande_service.infrastructure.modeles import RequestServiceModel
 
 
 # ---------------------------------------------------------------------------

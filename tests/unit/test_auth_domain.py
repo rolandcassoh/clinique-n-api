@@ -9,13 +9,13 @@ import pytest
 from app.core.auth.jwt_handler import JWTHandler
 from app.core.auth.password import hash_password, verify_password
 from app.modules.auth.application.commands import LoginCommand, RegisterCommand
-from app.modules.auth.application.use_cases import LoginUseCase, RegisterUseCase
-from app.modules.auth.domain.entities import User
+from app.modules.auth.application.cas_utilisation import LoginUseCase, RegisterUseCase
+from app.modules.auth.domain.entites import User
 from app.modules.auth.domain.exceptions import (
     InvalidCredentialsError,
     UserAlreadyExistsError,
 )
-from app.modules.auth.domain.repositories import UserRepositoryPort
+from app.modules.auth.domain.depots import UserRepositoryPort
 
 
 # ---------------------------------------------------------------------------

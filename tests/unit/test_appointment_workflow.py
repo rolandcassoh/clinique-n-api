@@ -8,18 +8,18 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 import pytest_asyncio
 
-from app.modules.appointment.domain.entities import (
+from app.modules.rendez_vous.domain.entites import (
     Appointment,
     AppointmentStatus,
     AppointmentType,
     PaymentStatus,
 )
-from app.modules.appointment.domain.exceptions import SlotNotAvailableError
-from app.modules.appointment.domain.services import (
+from app.modules.rendez_vous.domain.exceptions import SlotNotAvailableError
+from app.modules.rendez_vous.domain.services import (
     CancellationPolicyService,
     SlotAvailabilityService,
 )
-from app.modules.appointment.application.use_cases import (
+from app.modules.rendez_vous.application.cas_utilisation import (
     BookAppointmentCommand,
     BookAppointmentUseCase,
     CancelAppointmentUseCase,
@@ -265,7 +265,7 @@ class TestCancelAppointmentUseCase:
 
     @pytest.mark.asyncio
     async def test_cancel_other_patient_raises(self):
-        from app.modules.appointment.domain.exceptions import AppointmentPermissionError
+        from app.modules.rendez_vous.domain.exceptions import AppointmentPermissionError
 
         repo = AsyncMock()
         redis = AsyncMock()
@@ -296,7 +296,7 @@ class TestCancelAppointmentUseCase:
 
     @pytest.mark.asyncio
     async def test_cancel_not_found_raises(self):
-        from app.modules.appointment.domain.exceptions import AppointmentNotFoundError
+        from app.modules.rendez_vous.domain.exceptions import AppointmentNotFoundError
 
         repo = AsyncMock()
         redis = AsyncMock()

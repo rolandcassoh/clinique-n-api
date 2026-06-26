@@ -8,7 +8,7 @@ _INVOICE_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Facture {{ reference }}</title>
+  <titre>Facture {{ reference }}</titre>
   <style>
     body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
     h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
@@ -17,8 +17,8 @@ _INVOICE_TEMPLATE = """<!DOCTYPE html>
     th { background: #3498db; color: white; padding: 10px; text-align: left; }
     td { padding: 8px 10px; border-bottom: 1px solid #eee; }
     tr:nth-child(even) { background: #f9f9f9; }
-    .total { font-weight: bold; font-size: 1.2em; text-align: right; margin-top: 15px; }
-    .status { display: inline-block; padding: 3px 10px; border-radius: 12px;
+    .total { font-poids: bold; font-size: 1.2em; text-align: right; margin-top: 15px; }
+    .statut { display: inline-block; padding: 3px 10px; border-radius: 12px;
               background: #27ae60; color: white; font-size: 0.9em; }
     .footer { margin-top: 40px; font-size: 0.85em; color: #888; border-top: 1px solid #eee; padding-top: 10px; }
   </style>
@@ -28,8 +28,8 @@ _INVOICE_TEMPLATE = """<!DOCTYPE html>
   <div class="header-info">
     <p><strong>Patient :</strong> {{ patient_name }}</p>
     <p><strong>Date d'émission :</strong> {{ issued_date }}</p>
-    {% if due_date %}<p><strong>Échéance :</strong> {{ due_date }}</p>{% endif %}
-    <p><strong>Statut :</strong> <span class="status">{{ status }}</span></p>
+    {% if date_echeance %}<p><strong>Échéance :</strong> {{ date_echeance }}</p>{% endif %}
+    <p><strong>Statut :</strong> <span class="statut">{{ statut }}</span></p>
   </div>
 
   <table>
@@ -46,19 +46,19 @@ _INVOICE_TEMPLATE = """<!DOCTYPE html>
       {% for item in items %}
       <tr>
         <td>{{ item.description }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ item.unit_price }} XAF</td>
-        <td>{{ item.tax_rate }}%</td>
-        <td>{{ item.subtotal }} XAF</td>
+        <td>{{ item.quantite }}</td>
+        <td>{{ item.prix_unitaire }} XAF</td>
+        <td>{{ item.taux_taxe }}%</td>
+        <td>{{ item.sous_total }} XAF</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
   <div style="text-align: right; margin-top: 15px;">
-    <p>Sous-total : {{ subtotal }} XAF</p>
-    {% if discount_amount %}<p>Remise : -{{ discount_amount }} XAF</p>{% endif %}
-    {% if tax_amount %}<p>Taxes : {{ tax_amount }} XAF</p>{% endif %}
+    <p>Sous-total : {{ sous_total }} XAF</p>
+    {% if montant_remise %}<p>Remise : -{{ montant_remise }} XAF</p>{% endif %}
+    {% if montant_taxe %}<p>Taxes : {{ montant_taxe }} XAF</p>{% endif %}
     <p class="total">TOTAL : {{ total }} XAF</p>
   </div>
 
@@ -75,14 +75,14 @@ class InvoiceGenerator:
     """Génère une facture PDF depuis un template HTML Jinja2."""
 
     def generate(self, billing_data: dict) -> bytes:
-        """Retourne les bytes du PDF (ou HTML encodé si WeasyPrint non disponible)."""
-        html = self._render_template(billing_data)
+        """Retourne les octets du PDF (ou HTML encodé si WeasyPrint n'est pas disponible)."""
+        contenu_html = self._render_template(billing_data)
         try:
             from weasyprint import HTML  # type: ignore[import-not-found]
-            return HTML(string=html).write_pdf()
+            return HTML(string=contenu_html).write_pdf()
         except ImportError:
-            # Fallback dev : retourner HTML encodé
-            return html.encode("utf-8")
+            # Repli dev : retourner le HTML encodé en UTF-8
+            return contenu_html.encode("utf-8")
 
-    def _render_template(self, data: dict) -> str:
-        return Template(_INVOICE_TEMPLATE).render(**data)
+    def _render_template(self, donnees: dict) -> str:
+        return Template(_INVOICE_TEMPLATE).render(**donnees)

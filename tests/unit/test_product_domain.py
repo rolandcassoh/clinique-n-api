@@ -2,7 +2,7 @@
 import pytest
 from decimal import Decimal
 
-from app.modules.product.domain.entities import Money, Product, ProductReview
+from app.modules.produit.domain.entites import Money, Product, ProductReview
 
 
 # ---------------------------------------------------------------------------

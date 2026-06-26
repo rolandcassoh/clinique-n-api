@@ -10,12 +10,122 @@ from app.config import settings
 from app.database import Base
 
 # Import all models so Alembic detects them
-from app.modules.auth.infrastructure.models import (  # noqa: F401
+from app.modules.abonnement.infrastructure.modeles import (  # noqa: F401
+    PlanLimitationModel,
+    SubscriptionModel,
+    SubscriptionPlanModel,
+)
+from app.modules.auth.infrastructure.modeles import (  # noqa: F401
     ModelHasRoleModel,
     PersonalAccessTokenModel,
     RoleModel,
     UserModel,
     UserProfileModel,
+)
+from app.modules.blog.infrastructure.modeles import (  # noqa: F401
+    BlogCategoryModel,
+    BlogPostModel,
+)
+from app.modules.client.infrastructure.modeles import (  # noqa: F401
+    OtherPatientModel,
+)
+from app.modules.clinic.infrastructure.modeles import (  # noqa: F401
+    ClinicCategoryModel,
+    ClinicModel,
+    ClinicServiceModel,
+    DoctorLeaveModel,
+    DoctorModel,
+    DoctorRatingModel,
+    DoctorSessionModel,
+    ReceptionistModel,
+)
+from app.modules.commission.infrastructure.modeles import (  # noqa: F401
+    CommissionEarningModel,
+    EmployeeCommissionModel,
+    EmployeeEarningModel,
+)
+from app.modules.constante.infrastructure.modeles import (  # noqa: F401
+    SettingModel,
+)
+from app.modules.consultation.infrastructure.modeles import (  # noqa: F401
+    AppointmentBodyChartModel,
+    EncounterMedicalReportModel,
+    EncounterPrescriptionModel,
+    PatientEncounterModel,
+)
+from app.modules.demande_service.infrastructure.modeles import (  # noqa: F401
+    RequestServiceModel,
+)
+from app.modules.devise.infrastructure.modeles import (  # noqa: F401
+    CurrencyModel,
+)
+from app.modules.etiquette.infrastructure.modeles import (  # noqa: F401
+    TagModel,
+)
+from app.modules.facturation.infrastructure.modeles import (  # noqa: F401
+    BillingItemModel,
+    BillingRecordModel,
+)
+from app.modules.faq.infrastructure.modeles import (  # noqa: F401
+    FAQModel,
+)
+from app.modules.langue.infrastructure.modeles import (  # noqa: F401
+    LanguageModel,
+)
+from app.modules.logistique.infrastructure.modeles import (  # noqa: F401
+    ShippingRateModel,
+    ShippingZoneModel,
+)
+from app.modules.monde.infrastructure.modeles import (  # noqa: F401
+    CityModel,
+    CountryModel,
+    StateModel,
+)
+from app.modules.page.infrastructure.modeles import (  # noqa: F401
+    PageModel,
+)
+from app.modules.portefeuille.infrastructure.modeles import (  # noqa: F401
+    PatientWalletModel,
+    WalletHistoryModel,
+)
+from app.modules.produit.infrastructure.modeles import (  # noqa: F401
+    BrandModel,
+    CartItemModel,
+    CartModel,
+    OrderItemModel,
+    OrderModel,
+    ProductCategoryModel,
+    ProductImageModel,
+    ProductModel,
+    ProductReviewModel,
+    UnitModel,
+    WishListItemModel,
+    WishListModel,
+)
+from app.modules.promotion.infrastructure.modeles import (  # noqa: F401
+    PromotionModel,
+    PromotionUseModel,
+)
+from app.modules.rendez_vous.infrastructure.modeles import (  # noqa: F401
+    AppointmentModel,
+    AppointmentTransactionModel,
+)
+from app.modules.service.infrastructure.modeles import (  # noqa: F401
+    ServiceCategoryModel,
+    ServiceEmployeeModel,
+    ServiceGalleryModel,
+    ServiceModel,
+    ServicePackageModel,
+    ServiceReviewModel,
+)
+from app.modules.signe_vital.infrastructure.modeles import (  # noqa: F401
+    VitalSignsModel,
+)
+from app.modules.slider.infrastructure.modeles import (  # noqa: F401
+    SliderModel,
+)
+from app.modules.taxe.infrastructure.modeles import (  # noqa: F401
+    TaxModel,
 )
 
 config = context.config

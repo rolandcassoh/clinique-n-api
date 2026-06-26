@@ -30,20 +30,20 @@ class OneSignalAdapter:
     async def send_to_user(
         self,
         external_user_id: str,
-        title: str,
+        titre: str,
         body: str,
         data: dict | None = None,
         url: str | None = None,
     ) -> bool:
         """Envoie une notification à un utilisateur via son external_id."""
         if not self._is_configured():
-            logger.info("onesignal.skipped_not_configured", title=title)
+            logger.info("onesignal.skipped_not_configured", titre=titre)
             return False
         payload: dict = {
             "app_id": self._app_id,
             "include_external_user_ids": [external_user_id],
             "channel_for_external_user_ids": "push",
-            "headings": {"en": title, "fr": title},
+            "headings": {"en": titre, "fr": titre},
             "contents": {"en": body, "fr": body},
         }
         if data:
@@ -63,17 +63,17 @@ class OneSignalAdapter:
                 logger.info(
                     "onesignal.notification_sent",
                     recipients=result.get("recipients", 0),
-                    title=title,
+                    titre=titre,
                 )
                 return True
         except Exception as e:
-            logger.error("onesignal.send_failed", error=str(e), title=title)
+            logger.error("onesignal.send_failed", error=str(e), titre=titre)
             return False
 
     async def send_to_segment(
         self,
         segment: str,
-        title: str,
+        titre: str,
         body: str,
         data: dict | None = None,
     ) -> bool:
@@ -83,7 +83,7 @@ class OneSignalAdapter:
         payload = {
             "app_id": self._app_id,
             "included_segments": [segment],
-            "headings": {"en": title, "fr": title},
+            "headings": {"en": titre, "fr": titre},
             "contents": {"en": body, "fr": body},
             "data": data or {},
         }

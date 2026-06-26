@@ -17,7 +17,7 @@ from app.shared.exceptions.domain import DomainException
 import app.modules.promotion.infrastructure.models  # noqa: F401
 import app.modules.auth.infrastructure.models  # noqa: F401
 
-from app.modules.promotion.api.router import router as promotion_router
+from app.modules.promotion.api.routeur import router as promotion_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)
@@ -126,7 +126,7 @@ async def unauth_client(db: AsyncSession) -> AsyncClient:
 @pytest_asyncio.fixture
 async def promo_active(db: AsyncSession) -> dict:
     """Insère une promo active valide en DB et retourne son dict."""
-    from app.modules.promotion.infrastructure.models import PromotionModel
+    from app.modules.promotion.infrastructure.modeles import PromotionModel
 
     now = datetime.now(timezone.utc)
     m = PromotionModel(
@@ -149,7 +149,7 @@ async def promo_active(db: AsyncSession) -> dict:
 @pytest_asyncio.fixture
 async def promo_expiree(db: AsyncSession) -> dict:
     """Insère une promo expirée en DB."""
-    from app.modules.promotion.infrastructure.models import PromotionModel
+    from app.modules.promotion.infrastructure.modeles import PromotionModel
 
     now = datetime.now(timezone.utc)
     m = PromotionModel(

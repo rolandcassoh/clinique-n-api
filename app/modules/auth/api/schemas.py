@@ -4,16 +4,16 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class RegisterSchema(BaseModel):
-    name: str = Field(..., min_length=2, max_length=255)
-    email: EmailStr
-    password: str = Field(..., min_length=8, max_length=128)
-    username: str | None = Field(default=None, min_length=3, max_length=100)
-    phone: str | None = Field(default=None, max_length=30)
+    nom: str = Field(..., min_length=2, max_length=255)
+    courriel: EmailStr
+    mot_de_passe: str = Field(..., min_length=8, max_length=128)
+    nom_utilisateur: str | None = Field(default=None, min_length=3, max_length=100)
+    telephone: str | None = Field(default=None, max_length=30)
 
 
 class LoginSchema(BaseModel):
-    email: EmailStr
-    password: str = Field(..., min_length=1)
+    courriel: EmailStr
+    mot_de_passe: str = Field(..., min_length=1)
 
 
 class RefreshTokenSchema(BaseModel):
@@ -21,49 +21,49 @@ class RefreshTokenSchema(BaseModel):
 
 
 class ForgotPasswordSchema(BaseModel):
-    email: EmailStr
+    courriel: EmailStr
 
 
 class ResetPasswordSchema(BaseModel):
-    token: str = Field(..., min_length=1)
+    jeton: str = Field(..., min_length=1)
     new_password: str = Field(..., min_length=8, max_length=128)
-    user_id: int
+    id_utilisateur: int
 
 
 class VerifyOtpSchema(BaseModel):
-    user_id: int
-    otp_code: str = Field(..., min_length=4, max_length=20)
+    id_utilisateur: int
+    code_otp: str = Field(..., min_length=4, max_length=20)
 
 
 class VerifyTotpSchema(BaseModel):
-    token: str = Field(..., min_length=6, max_length=8)
+    jeton: str = Field(..., min_length=6, max_length=8)
 
 
 class UserProfileResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    user_id: int
+    id_utilisateur: int
     avatar: str | None = None
-    address: str | None = None
-    city_id: int | None = None
-    date_of_birth: datetime | None = None
-    gender: str | None = None
-    blood_group: str | None = None
-    bio: str | None = None
+    adresse: str | None = None
+    id_ville: int | None = None
+    date_naissance: datetime | None = None
+    sexe: str | None = None
+    groupe_sanguin: str | None = None
+    biographie: str | None = None
 
 
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    name: str
-    email: str
-    username: str | None = None
-    phone: str | None = None
-    is_active: bool
-    email_verified_at: datetime | None = None
-    totp_enabled: bool
+    nom: str
+    courriel: str
+    nom_utilisateur: str | None = None
+    telephone: str | None = None
+    est_actif: bool
+    courriel_verifie_le: datetime | None = None
+    totp_actif: bool
     roles: list[str] = []
     created_at: datetime
 
@@ -71,14 +71,14 @@ class UserResponse(BaseModel):
 class TokenResponseSchema(BaseModel):
     access_token: str
     refresh_token: str
-    token_type: str = "Bearer"
+    type_jeton: str = "Bearer"
     user: UserResponse | None = None
 
 
 class AccessTokenResponseSchema(BaseModel):
     access_token: str
     refresh_token: str
-    token_type: str = "Bearer"
+    type_jeton: str = "Bearer"
 
 
 class TotpSetupResponse(BaseModel):

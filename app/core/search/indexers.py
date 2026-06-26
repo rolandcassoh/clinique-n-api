@@ -21,14 +21,14 @@ class DoctorSearchIndexer:
         try:
             index = client.index(cls.INDEX_NAME)
             index.update_searchable_attributes([
-                "name", "speciality", "qualification", "clinic_name", "city_name",
+                "nom", "specialite", "qualification", "clinic_name", "city_name",
             ])
             index.update_filterable_attributes([
-                "clinic_id", "city_id", "speciality", "is_available",
-                "consultation_fee", "is_deleted",
+                "id_clinique", "id_ville", "specialite", "est_disponible",
+                "honoraires_consultation", "is_deleted",
             ])
             index.update_sortable_attributes([
-                "consultation_fee", "average_rating", "experience_years", "created_at",
+                "honoraires_consultation", "note_moyenne", "annees_experience", "created_at",
             ])
             index.update_ranking_rules([
                 "words", "typo", "proximity", "attribute", "sort", "exactness",
@@ -50,15 +50,15 @@ class DoctorSearchIndexer:
             return False
 
     @classmethod
-    def remove_doctor(cls, client, doctor_id: int) -> bool:
+    def remove_doctor(cls, client, id_medecin: int) -> bool:
         """Supprime un médecin de l'index."""
         if not client:
             return False
         try:
-            client.index(cls.INDEX_NAME).delete_document(doctor_id)
+            client.index(cls.INDEX_NAME).delete_document(id_medecin)
             return True
         except Exception as exc:
-            logger.error("meilisearch.remove_doctor_failed", doctor_id=doctor_id, error=str(exc))
+            logger.error("meilisearch.remove_doctor_failed", id_medecin=id_medecin, error=str(exc))
             return False
 
     @classmethod
@@ -78,26 +78,26 @@ class DoctorSearchIndexer:
         if not client:
             return []
         try:
-            search_params: dict[str, Any] = {"limit": limit, "offset": offset}
+            parametres_recherche: dict[str, Any] = {"limit": limit, "offset": offset}
 
-            filter_parts: list[str] = ["is_deleted = false"]
+            parties_filtre: list[str] = ["is_deleted = false"]
             if filters:
                 for k, v in filters.items():
                     if isinstance(v, str):
-                        filter_parts.append(f"{k} = '{v}'")
+                        parties_filtre.append(f"{k} = '{v}'")
                     elif isinstance(v, bool):
-                        filter_parts.append(f"{k} = {str(v).lower()}")
+                        parties_filtre.append(f"{k} = {str(v).lower()}")
                     else:
-                        filter_parts.append(f"{k} = {v}")
-            search_params["filter"] = " AND ".join(filter_parts)
+                        parties_filtre.append(f"{k} = {v}")
+            parametres_recherche["filter"] = " AND ".join(parties_filtre)
 
             if sort:
-                search_params["sort"] = sort
+                parametres_recherche["sort"] = sort
 
-            result = client.index(cls.INDEX_NAME).search(query, search_params)
-            return result.get("hits", [])
+            resultat = client.index(cls.INDEX_NAME).search(query, parametres_recherche)
+            return resultat.get("hits", [])
         except Exception as exc:
-            logger.error("meilisearch.search_failed", index=cls.INDEX_NAME, error=str(exc))
+            logger.error("meilisearch.recherche_echouee", index=cls.INDEX_NAME, error=str(exc))
             return []
 
 
@@ -114,15 +114,15 @@ class ProductSearchIndexer:
         try:
             index = client.index(cls.INDEX_NAME)
             index.update_searchable_attributes([
-                "name", "description", "short_description",
-                "category_name", "brand_name", "sku",
+                "nom", "description", "short_description",
+                "category_name", "brand_name", "reference_article",
             ])
             index.update_filterable_attributes([
-                "category_id", "brand_id", "is_active", "is_featured",
-                "is_deleted", "vendor_id",
+                "id_categorie", "id_marque", "est_actif", "est_mis_en_avant",
+                "is_deleted", "id_prestataire",
             ])
             index.update_sortable_attributes([
-                "price", "discount_price", "created_at",
+                "prix", "prix_remise", "created_at",
             ])
             index.update_ranking_rules([
                 "words", "typo", "proximity", "attribute", "sort", "exactness",
@@ -144,15 +144,15 @@ class ProductSearchIndexer:
             return False
 
     @classmethod
-    def remove_product(cls, client, product_id: int) -> bool:
+    def remove_product(cls, client, id_produit: int) -> bool:
         """Supprime un produit de l'index."""
         if not client:
             return False
         try:
-            client.index(cls.INDEX_NAME).delete_document(product_id)
+            client.index(cls.INDEX_NAME).delete_document(id_produit)
             return True
         except Exception as exc:
-            logger.error("meilisearch.remove_product_failed", product_id=product_id, error=str(exc))
+            logger.error("meilisearch.remove_product_failed", id_produit=id_produit, error=str(exc))
             return False
 
     @classmethod
@@ -172,30 +172,30 @@ class ProductSearchIndexer:
         if not client:
             return []
         try:
-            search_params: dict[str, Any] = {
+            parametres_recherche: dict[str, Any] = {
                 "limit": limit,
                 "offset": offset,
             }
 
-            base_filter = "is_active = true AND is_deleted = false"
+            filtre_de_base = "est_actif = true AND is_deleted = false"
             if filters:
-                extra_parts: list[str] = []
+                parties_supplementaires: list[str] = []
                 for k, v in filters.items():
                     if isinstance(v, str):
-                        extra_parts.append(f"{k} = '{v}'")
+                        parties_supplementaires.append(f"{k} = '{v}'")
                     elif isinstance(v, bool):
-                        extra_parts.append(f"{k} = {str(v).lower()}")
+                        parties_supplementaires.append(f"{k} = {str(v).lower()}")
                     else:
-                        extra_parts.append(f"{k} = {v}")
-                search_params["filter"] = base_filter + " AND " + " AND ".join(extra_parts)
+                        parties_supplementaires.append(f"{k} = {v}")
+                parametres_recherche["filter"] = filtre_de_base + " AND " + " AND ".join(parties_supplementaires)
             else:
-                search_params["filter"] = base_filter
+                parametres_recherche["filter"] = filtre_de_base
 
             if sort:
-                search_params["sort"] = sort
+                parametres_recherche["sort"] = sort
 
-            result = client.index(cls.INDEX_NAME).search(query, search_params)
-            return result.get("hits", [])
+            resultat = client.index(cls.INDEX_NAME).search(query, parametres_recherche)
+            return resultat.get("hits", [])
         except Exception as exc:
-            logger.error("meilisearch.search_products_failed", index=cls.INDEX_NAME, error=str(exc))
+            logger.error("meilisearch.recherche_produits_echouee", index=cls.INDEX_NAME, error=str(exc))
             return []

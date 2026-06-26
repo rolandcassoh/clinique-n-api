@@ -16,11 +16,11 @@ class FieldEncryption:
     @classmethod
     def _get_fernet(cls) -> Fernet:
         if cls._fernet is None:
-            key = settings.encryption_key.encode()
+            cle = settings.encryption_key.encode()
             # Fernet nécessite exactement 32 bytes encodés en base64 URL-safe
-            if len(key) < 32:
-                key = key.ljust(32, b"=")
-            cls._fernet = Fernet(base64.urlsafe_b64encode(key[:32]))
+            if len(cle) < 32:
+                cle = cle.ljust(32, b"=")
+            cls._fernet = Fernet(base64.urlsafe_b64encode(cle[:32]))
         return cls._fernet
 
     @classmethod

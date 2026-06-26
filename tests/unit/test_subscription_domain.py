@@ -5,13 +5,13 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.modules.subscription.application.use_cases import (
+from app.modules.abonnement.application.cas_utilisation import (
     CancelSubscriptionUseCase,
     RenewSubscriptionUseCase,
     SubscribeUseCase,
 )
-from app.modules.subscription.domain.entities import Subscription, SubscriptionPlan
-from app.modules.subscription.domain.exceptions import (
+from app.modules.abonnement.domain.entites import Subscription, SubscriptionPlan
+from app.modules.abonnement.domain.exceptions import (
     ActiveSubscriptionExistsError,
     CannotRenewCancelledError,
 )

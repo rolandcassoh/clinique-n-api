@@ -7,25 +7,25 @@ from prometheus_client import Counter, Histogram, Gauge, Summary
 appointments_created_total = Counter(
     "appointments_created_total",
     "Total rendez-vous créés",
-    ["clinic_id", "payment_gateway", "appointment_type"],
+    ["id_clinique", "passerelle_paiement", "appointment_type"],
 )
 
 appointments_cancelled_total = Counter(
     "appointments_cancelled_total",
     "Total rendez-vous annulés",
-    ["clinic_id", "cancellation_policy"],  # full | partial | none
+    ["id_clinique", "cancellation_policy"],  # full | partial | none
 )
 
 appointments_completed_total = Counter(
     "appointments_completed_total",
     "Total rendez-vous complétés",
-    ["clinic_id"],
+    ["id_clinique"],
 )
 
 appointment_booking_duration_seconds = Histogram(
     "appointment_booking_duration_seconds",
     "Temps de traitement d'une réservation (création + paiement)",
-    ["payment_gateway"],
+    ["passerelle_paiement"],
     buckets=[0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0],
 )
 
@@ -34,19 +34,19 @@ appointment_booking_duration_seconds = Histogram(
 payments_processed_total = Counter(
     "payments_processed_total",
     "Total paiements traités",
-    ["gateway", "status"],  # succeeded | failed | refunded
+    ["passerelle", "statut"],  # succeeded | failed | refunded
 )
 
 payment_amount_total = Counter(
     "payment_amount_total_xaf",
     "Montant total traité (en XAF)",
-    ["gateway"],
+    ["passerelle"],
 )
 
 payment_processing_seconds = Histogram(
     "payment_processing_seconds",
     "Temps de traitement d'un paiement",
-    ["gateway"],
+    ["passerelle"],
     buckets=[0.1, 0.5, 1.0, 2.0, 5.0],
 )
 
@@ -55,7 +55,7 @@ payment_processing_seconds = Histogram(
 active_doctors_gauge = Gauge(
     "active_doctors_total",
     "Nombre de médecins actifs",
-    ["clinic_id"],
+    ["id_clinique"],
 )
 
 slots_queried_total = Counter(
@@ -69,7 +69,7 @@ slots_queried_total = Counter(
 notifications_sent_total = Counter(
     "notifications_sent_total",
     "Notifications envoyées",
-    ["channel", "status"],  # channel: email|firebase|onesignal, status: success|failed
+    ["channel", "statut"],  # channel: courriel|firebase|onesignal, statut: success|failed
 )
 
 # ─── Auth ────────────────────────────────────────────────────────────────────
@@ -77,43 +77,43 @@ notifications_sent_total = Counter(
 login_attempts_total = Counter(
     "login_attempts_total",
     "Tentatives de connexion",
-    ["status"],  # success | failed | blocked
+    ["statut"],  # success | failed | blocked
 )
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
 
 def record_appointment_created(
-    clinic_id: str, gateway: str, apt_type: str = "in_person"
+    id_clinique: str, passerelle: str, apt_type: str = "in_person"
 ) -> None:
     """Incrémente le compteur de rendez-vous créés."""
     appointments_created_total.labels(
-        clinic_id=clinic_id,
-        payment_gateway=gateway,
+        id_clinique=id_clinique,
+        passerelle_paiement=passerelle,
         appointment_type=apt_type,
     ).inc()
 
 
 def record_appointment_cancelled(
-    clinic_id: str, cancellation_policy: str = "none"
+    id_clinique: str, cancellation_policy: str = "none"
 ) -> None:
     """Incrémente le compteur de rendez-vous annulés."""
     appointments_cancelled_total.labels(
-        clinic_id=clinic_id,
+        id_clinique=id_clinique,
         cancellation_policy=cancellation_policy,
     ).inc()
 
 
-def record_appointment_completed(clinic_id: str) -> None:
+def record_appointment_completed(id_clinique: str) -> None:
     """Incrémente le compteur de rendez-vous complétés."""
-    appointments_completed_total.labels(clinic_id=clinic_id).inc()
+    appointments_completed_total.labels(id_clinique=id_clinique).inc()
 
 
-def record_payment(gateway: str, status: str, amount: float = 0.0) -> None:
+def record_payment(passerelle: str, statut: str, montant: float = 0.0) -> None:
     """Enregistre un paiement traité."""
-    payments_processed_total.labels(gateway=gateway, status=status).inc()
-    if amount > 0:
-        payment_amount_total.labels(gateway=gateway).inc(amount)
+    payments_processed_total.labels(passerelle=passerelle, statut=statut).inc()
+    if montant > 0:
+        payment_amount_total.labels(passerelle=passerelle).inc(montant)
 
 
 def record_slot_query(cache_hit: bool) -> None:
@@ -125,10 +125,10 @@ def record_notification(channel: str, success: bool) -> None:
     """Enregistre l'envoi d'une notification."""
     notifications_sent_total.labels(
         channel=channel,
-        status="success" if success else "failed",
+        statut="success" if success else "failed",
     ).inc()
 
 
-def record_login_attempt(status: str) -> None:
+def record_login_attempt(statut: str) -> None:
     """Enregistre une tentative de connexion (success | failed | blocked)."""
-    login_attempts_total.labels(status=status).inc()
+    login_attempts_total.labels(statut=statut).inc()

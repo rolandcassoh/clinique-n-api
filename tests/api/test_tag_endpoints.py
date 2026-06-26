@@ -3,7 +3,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.tag.infrastructure.models import TagModel  # noqa: F401 — enregistrement metadata
+from app.modules.etiquette.infrastructure.modeles import TagModel  # noqa: F401 — enregistrement metadata
 
 
 @pytest.mark.asyncio

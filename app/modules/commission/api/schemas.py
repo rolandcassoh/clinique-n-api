@@ -1,4 +1,4 @@
-"""Schémas Pydantic v2 du module commission."""
+"""Schémas Pydantic v2 du module commissions."""
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -12,15 +12,15 @@ class CommissionEarningSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    appointment_id: int
-    clinic_id: int
-    doctor_id: int
-    appointment_amount: Decimal
-    commission_rate: Decimal
-    commission_amount: Decimal
-    doctor_earning: Decimal
-    status: str
-    paid_at: Optional[datetime]
+    id_rendez_vous: int
+    id_clinique: int
+    id_medecin: int
+    montant_rdv: Decimal
+    taux_commission: Decimal
+    montant_commission: Decimal
+    gain_medecin: Decimal
+    statut: str
+    paye_le: Optional[datetime]
     created_at: datetime
     updated_at: datetime
 
@@ -29,28 +29,28 @@ class EmployeeEarningSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    doctor_id: int
-    period_start: date
-    period_end: date
-    total_appointments: int
-    gross_amount: Decimal
-    commission_deducted: Decimal
-    net_amount: Decimal
-    status: str
-    paid_at: Optional[datetime]
+    id_medecin: int
+    debut_periode: date
+    fin_periode: date
+    total_rdv: int
+    montant_brut: Decimal
+    commission_deduite: Decimal
+    montant_net: Decimal
+    statut: str
+    paye_le: Optional[datetime]
     created_at: datetime
     updated_at: datetime
 
 
 class DoctorEarningsSummarySchema(BaseModel):
-    total_appointments: int
-    gross_amount: float
+    total_rdv: int
+    montant_brut: float
     total_commissions: float
-    net_amount: float
+    montant_net: float
 
 
 class GenerateEarningsReportRequest(BaseModel):
-    period_start: date
-    period_end: date
-    clinic_id: int
-    doctor_id: Optional[int] = None
+    debut_periode: date
+    fin_periode: date
+    id_clinique: int
+    id_medecin: Optional[int] = None

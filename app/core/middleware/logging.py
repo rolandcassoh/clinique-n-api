@@ -15,30 +15,30 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        request_id = str(uuid.uuid4())
-        start = time.perf_counter()
+        identifiant_requete = str(uuid.uuid4())
+        debut = time.perf_counter()
 
         log = logger.bind(
-            request_id=request_id,
+            request_id=identifiant_requete,
             method=request.method,
             path=request.url.path,
-            client_ip=request.client.host if request.client else "unknown",
+            client_ip=request.client.host if request.client else "inconnu",
         )
 
-        log.info("request.started")
+        log.info("requete.demarree")
 
         try:
-            response = await call_next(request)
+            reponse = await call_next(request)
         except Exception as exc:
-            log.exception("request.failed", error=str(exc))
+            log.exception("requete.echouee", error=str(exc))
             raise
 
-        duration_ms = round((time.perf_counter() - start) * 1000, 2)
+        duree_ms = round((time.perf_counter() - debut) * 1000, 2)
         log.info(
-            "request.completed",
-            status_code=response.status_code,
-            duration_ms=duration_ms,
+            "requete.terminee",
+            status_code=reponse.status_code,
+            duration_ms=duree_ms,
         )
 
-        response.headers["X-Request-ID"] = request_id
-        return response
+        reponse.headers["X-Request-ID"] = identifiant_requete
+        return reponse

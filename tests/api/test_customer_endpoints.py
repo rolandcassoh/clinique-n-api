@@ -13,9 +13,9 @@ from app.core.auth.dependencies import get_current_user
 
 # Import des modèles pour SQLite en mémoire
 import app.modules.auth.infrastructure.models  # noqa: F401
-import app.modules.customer.infrastructure.models  # noqa: F401
+import app.modules.client.infrastructure.models  # noqa: F401
 
-from app.modules.customer.api.router import router as customer_router
+from app.modules.client.api.routeur import router as customer_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)
@@ -55,7 +55,7 @@ async def db() -> AsyncSession:
 @pytest_asyncio.fixture
 async def seed_user(db: AsyncSession) -> None:
     """Crée un utilisateur minimal dans la DB de test."""
-    from app.modules.auth.infrastructure.models import UserModel
+    from app.modules.auth.infrastructure.modeles import UserModel
     from app.core.auth.password import hash_password
 
     user = UserModel(
@@ -184,7 +184,7 @@ class TestDeleteFamilyMemberOwnership:
         self, db: AsyncSession
     ) -> None:
         """Un user ne peut pas supprimer le membre de famille d'un autre."""
-        from app.modules.customer.infrastructure.models import OtherPatientModel
+        from app.modules.client.infrastructure.modeles import OtherPatientModel
 
         # Créer un membre appartenant à OTHER_USER_ID
         other_member = OtherPatientModel(

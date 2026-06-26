@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # Import des modèles pour créer les tables
 import app.modules.service.infrastructure.models  # noqa: F401
 
-from app.modules.service.infrastructure.models import (
+from app.modules.service.infrastructure.modeles import (
     ServiceCategoryModel,
     ServiceModel,
     ServiceReviewModel,

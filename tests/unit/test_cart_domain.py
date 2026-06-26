@@ -3,8 +3,8 @@ import pytest
 from decimal import Decimal
 from datetime import datetime
 
-from app.modules.product.domain.entities import Cart, CartItem, Product
-from app.modules.product.domain.exceptions import (
+from app.modules.produit.domain.entites import Cart, CartItem, Product
+from app.modules.produit.domain.exceptions import (
     CartItemNotFoundError,
     InsufficientStockError,
 )

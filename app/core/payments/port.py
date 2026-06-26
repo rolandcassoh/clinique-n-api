@@ -6,37 +6,37 @@ from decimal import Decimal
 @dataclass
 class PaymentIntent:
     id: str
-    amount: Decimal
-    currency: str
-    status: str
+    montant: Decimal
+    devise: str
+    statut: str
     client_secret: str | None = None
 
 
 @dataclass
 class RefundResult:
     id: str
-    amount: Decimal
-    status: str
+    montant: Decimal
+    statut: str
 
 
 class PaymentPort(ABC):
     @abstractmethod
     async def create_payment_intent(
         self,
-        amount: Decimal,
-        currency: str,
+        montant: Decimal,
+        devise: str,
         metadata: dict[str, str] | None = None,
     ) -> PaymentIntent:
-        """Create a payment intent and return it."""
+        """Crée une intention de paiement et la retourne."""
 
     @abstractmethod
     async def confirm_payment(self, payment_intent_id: str) -> PaymentIntent:
-        """Confirm an existing payment intent."""
+        """Confirme une intention de paiement existante."""
 
     @abstractmethod
-    async def refund(self, payment_intent_id: str, amount: Decimal | None = None) -> RefundResult:
-        """Issue a full or partial refund."""
+    async def refund(self, payment_intent_id: str, montant: Decimal | None = None) -> RefundResult:
+        """Émet un remboursement total ou partiel."""
 
     @abstractmethod
     async def get_payment(self, payment_intent_id: str) -> PaymentIntent:
-        """Retrieve the current state of a payment intent."""
+        """Récupère l'état courant d'une intention de paiement."""

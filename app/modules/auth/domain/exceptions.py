@@ -3,44 +3,44 @@ from app.shared.exceptions.domain import DomainException
 
 class InvalidCredentialsError(DomainException):
     def __init__(self) -> None:
-        super().__init__("Invalid email or password.")
+        super().__init__("Email ou mot de passe incorrect.")
 
 
 class UserNotFoundError(DomainException):
     def __init__(self, identifier: str | int) -> None:
-        super().__init__(f"User '{identifier}' not found.")
+        super().__init__(f"Utilisateur '{identifier}' introuvable.")
 
 
 class UserAlreadyExistsError(DomainException):
-    def __init__(self, email: str) -> None:
-        super().__init__(f"User with email '{email}' already exists.")
+    def __init__(self, courriel: str) -> None:
+        super().__init__(f"Un utilisateur avec l'courriel '{courriel}' existe déjà.")
 
 
 class EmailNotVerifiedError(DomainException):
     def __init__(self) -> None:
-        super().__init__("Email address has not been verified.")
+        super().__init__("L'adresse courriel n'a pas encore été vérifiée.")
 
 
 class AccountInactiveError(DomainException):
     def __init__(self) -> None:
-        super().__init__("Account is inactive.")
+        super().__init__("Ce compte est inactif.")
 
 
 class InvalidOtpError(DomainException):
     def __init__(self) -> None:
-        super().__init__("Invalid or expired OTP code.")
+        super().__init__("Code OTP invalide ou expiré.")
 
 
 class InvalidTotpError(DomainException):
     def __init__(self) -> None:
-        super().__init__("Invalid TOTP token.")
+        super().__init__("Jeton TOTP invalide.")
 
 
 class TotpAlreadyEnabledError(DomainException):
     def __init__(self) -> None:
-        super().__init__("Two-factor authentication is already enabled.")
+        super().__init__("L'authentification à deux facteurs est déjà activée.")
 
 
 class InvalidResetTokenError(DomainException):
     def __init__(self) -> None:
-        super().__init__("Invalid or expired password reset token.")
+        super().__init__("Jeton de réinitialisation du mot de passe invalide ou expiré.")

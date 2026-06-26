@@ -13,10 +13,10 @@ from app.core.auth.dependencies import get_current_user
 from app.shared.exceptions.domain import DomainException
 
 import app.modules.auth.infrastructure.models  # noqa: F401
-import app.modules.product.infrastructure.models  # noqa: F401
+import app.modules.produit.infrastructure.models  # noqa: F401
 
-from app.modules.product.api.router import router as product_router
-from app.modules.product.infrastructure.models import (
+from app.modules.produit.api.routeur import router as product_router
+from app.modules.produit.infrastructure.modeles import (
     ProductCategoryModel,
     ProductModel,
     CartModel,

@@ -1,3 +1,4 @@
+"""Exceptions métier du module slider."""
 from app.shared.exceptions.domain import EntityNotFoundError
 
 

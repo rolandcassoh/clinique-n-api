@@ -34,30 +34,30 @@ class RazorpayAdapter(PaymentPort):
 
     async def create_payment_intent(
         self,
-        amount: Decimal,
-        currency: str,
+        montant: Decimal,
+        devise: str,
         metadata: Optional[dict] = None,
     ) -> PaymentIntent:
         if not self._client:
             return PaymentIntent(
                 id="order_test_stub",
-                amount=amount,
-                currency=currency,
-                status="created",
+                montant=montant,
+                devise=devise,
+                statut="created",
                 client_secret=None,
             )
         order = self._client.order.create(
             {
-                "amount": int(amount * 100),
-                "currency": currency.upper(),
+                "montant": int(montant * 100),
+                "devise": devise.upper(),
                 "notes": metadata or {},
             }
         )
         return PaymentIntent(
             id=order["id"],
-            amount=Decimal(str(order["amount"] / 100)),
-            currency=order["currency"],
-            status=order["status"],
+            montant=Decimal(str(order["montant"] / 100)),
+            devise=order["devise"],
+            statut=order["statut"],
             client_secret=None,
         )
 
@@ -65,53 +65,53 @@ class RazorpayAdapter(PaymentPort):
         if not self._client:
             return PaymentIntent(
                 id=payment_intent_id,
-                amount=Decimal("0"),
-                currency="INR",
-                status="captured",
+                montant=Decimal("0"),
+                devise="INR",
+                statut="captured",
                 client_secret=None,
             )
         payment = self._client.payment.fetch(payment_intent_id)
         return PaymentIntent(
             id=payment["id"],
-            amount=Decimal(str(payment["amount"] / 100)),
-            currency=payment["currency"],
-            status=payment["status"],
+            montant=Decimal(str(payment["montant"] / 100)),
+            devise=payment["devise"],
+            statut=payment["statut"],
             client_secret=None,
         )
 
     async def refund(
-        self, payment_intent_id: str, amount: Optional[Decimal] = None
+        self, payment_intent_id: str, montant: Optional[Decimal] = None
     ) -> RefundResult:
         if not self._client:
             return RefundResult(
                 id=f"rfnd_test_{payment_intent_id}",
-                amount=amount or Decimal("0"),
-                status="refunded",
+                montant=montant or Decimal("0"),
+                statut="refunded",
             )
         params: dict = {}
-        if amount is not None:
-            params["amount"] = int(amount * 100)
+        if montant is not None:
+            params["montant"] = int(montant * 100)
         refund = self._client.payment.refund(payment_intent_id, params)
         return RefundResult(
             id=refund["id"],
-            amount=Decimal(str(refund["amount"] / 100)),
-            status="refunded",
+            montant=Decimal(str(refund["montant"] / 100)),
+            statut="refunded",
         )
 
     async def get_payment(self, payment_intent_id: str) -> PaymentIntent:
         if not self._client:
             return PaymentIntent(
                 id=payment_intent_id,
-                amount=Decimal("0"),
-                currency="INR",
-                status="captured",
+                montant=Decimal("0"),
+                devise="INR",
+                statut="captured",
                 client_secret=None,
             )
         payment = self._client.payment.fetch(payment_intent_id)
         return PaymentIntent(
             id=payment["id"],
-            amount=Decimal(str(payment["amount"] / 100)),
-            currency=payment["currency"],
-            status=payment["status"],
+            montant=Decimal(str(payment["montant"] / 100)),
+            devise=payment["devise"],
+            statut=payment["statut"],
             client_secret=None,
         )

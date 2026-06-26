@@ -13,5 +13,5 @@ class BlogCategoryNotFoundError(EntityNotFoundError):
 
 
 class SlugAlreadyExistsError(ConflictError):
-    def __init__(self, slug: str) -> None:
-        super().__init__(f"A blog post with slug '{slug}' already exists.")
+    def __init__(self, identifiant_url: str) -> None:
+        super().__init__(f"Un article de blog avec le identifiant_url '{identifiant_url}' existe déjà.")

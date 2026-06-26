@@ -14,10 +14,10 @@ from app.core.auth.jwt_handler import JWTHandler
 
 # Import des modèles pour créer les tables
 import app.modules.auth.infrastructure.models  # noqa: F401
-import app.modules.appointment.infrastructure.models  # noqa: F401
-import app.modules.encounter.infrastructure.models  # noqa: F401
+import app.modules.rendez_vous.infrastructure.models  # noqa: F401
+import app.modules.consultation.infrastructure.models  # noqa: F401
 
-from app.modules.encounter.api.router import router as encounter_router
+from app.modules.consultation.api.routeur import router as encounter_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)
@@ -230,7 +230,7 @@ async def test_get_medical_report_wrong_doctor_forbidden(
     async def _fake_redis():
         yield fake_redis
 
-    from app.modules.encounter.api.router import router as enc_router
+    from app.modules.consultation.api.routeur import router as enc_router
     test_app2 = FastAPI()
     test_app2.include_router(enc_router, prefix="/api")
     test_app2.dependency_overrides[get_db] = _override_db

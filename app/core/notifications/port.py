@@ -13,8 +13,8 @@ class EmailMessage:
 class NotificationPort(ABC):
     @abstractmethod
     async def send_email(self, message: EmailMessage) -> None:
-        """Send an email notification."""
+        """Envoie une notification par courriel."""
 
     @abstractmethod
     async def send_sms(self, phone_number: str, text: str) -> None:
-        """Send an SMS notification."""
+        """Envoie une notification par SMS."""

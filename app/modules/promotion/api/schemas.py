@@ -9,69 +9,69 @@ class PromotionSchema(BaseModel):
 
     id: int
     code: str
-    name: str
+    nom: str
     type: str
-    value: Decimal
-    min_order_amount: Decimal | None
-    max_discount_amount: Decimal | None
-    usage_limit: int | None
-    usage_count: int
-    starts_at: datetime | None
-    expires_at: datetime | None
-    is_active: bool
-    applicable_to: str
+    valeur: Decimal
+    montant_min_commande: Decimal | None
+    remise_maximale: Decimal | None
+    limite_utilisation: int | None
+    compteur_utilisation: int
+    debut_le: datetime | None
+    expire_le: datetime | None
+    est_actif: bool
+    applicable_a: str
     created_at: datetime
 
 
 class PromotionCreateSchema(BaseModel):
     code: str = Field(max_length=50)
-    name: str = Field(max_length=255)
+    nom: str = Field(max_length=255)
     type: str  # 'percentage' | 'fixed'
-    value: Decimal = Field(gt=0)
-    min_order_amount: Decimal | None = None
-    max_discount_amount: Decimal | None = None
-    usage_limit: int | None = None
-    starts_at: datetime | None = None
-    expires_at: datetime | None = None
-    is_active: bool = True
-    applicable_to: str = "all"
+    valeur: Decimal = Field(gt=0)
+    montant_min_commande: Decimal | None = None
+    remise_maximale: Decimal | None = None
+    limite_utilisation: int | None = None
+    debut_le: datetime | None = None
+    expire_le: datetime | None = None
+    est_actif: bool = True
+    applicable_a: str = "all"
 
 
 class PromotionUpdateSchema(BaseModel):
     code: str = Field(max_length=50)
-    name: str = Field(max_length=255)
+    nom: str = Field(max_length=255)
     type: str
-    value: Decimal = Field(gt=0)
-    min_order_amount: Decimal | None = None
-    max_discount_amount: Decimal | None = None
-    usage_limit: int | None = None
-    starts_at: datetime | None = None
-    expires_at: datetime | None = None
-    is_active: bool = True
-    applicable_to: str = "all"
+    valeur: Decimal = Field(gt=0)
+    montant_min_commande: Decimal | None = None
+    remise_maximale: Decimal | None = None
+    limite_utilisation: int | None = None
+    debut_le: datetime | None = None
+    expire_le: datetime | None = None
+    est_actif: bool = True
+    applicable_a: str = "all"
 
 
 class ValidatePromotionRequestSchema(BaseModel):
     code: str
-    amount: Decimal = Field(gt=0)
-    applicable_to: str = "all"
+    montant: Decimal = Field(gt=0)
+    applicable_a: str = "all"
 
 
 class ValidatePromotionResponseSchema(BaseModel):
     valid: bool
-    discount_amount: float
+    montant_remise: float
     promotion: PromotionSchema | None
-    reason: str | None = None
+    motif: str | None = None
 
 
 class PromotionUseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    promotion_id: int
-    user_id: int
-    order_id: int | None
-    appointment_id: int | None
-    discount_amount: Decimal
-    used_at: datetime
+    id_promotion: int
+    id_utilisateur: int
+    id_commande: int | None
+    id_rendez_vous: int | None
+    montant_remise: Decimal
+    utilise_le: datetime
     created_at: datetime

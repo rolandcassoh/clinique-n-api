@@ -5,8 +5,8 @@ from decimal import Decimal
 
 import pytest
 
-from app.modules.wallet.domain.entities import PatientWallet, TransactionType
-from app.modules.wallet.domain.exceptions import InsufficientFundsError
+from app.modules.portefeuille.domain.entites import PatientWallet, TransactionType
+from app.modules.portefeuille.domain.exceptions import InsufficientFundsError
 
 
 class TestPatientWallet:

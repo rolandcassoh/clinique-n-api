@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.modules.currency.application.use_cases import CurrencyUseCases
-from app.modules.currency.domain.entities import Currency
-from app.modules.currency.domain.exceptions import CurrencyCodeConflictError, CurrencyNotFoundError
+from app.modules.devise.application.cas_utilisation import CurrencyUseCases
+from app.modules.devise.domain.entites import Currency
+from app.modules.devise.domain.exceptions import CurrencyCodeConflictError, CurrencyNotFoundError
 
 
 def _make_currency(id: int = 1, code: str = "XAF", is_default: bool = False) -> Currency:

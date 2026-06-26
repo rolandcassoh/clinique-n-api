@@ -15,9 +15,9 @@ from app.shared.exceptions.domain import DomainException
 
 import app.modules.auth.infrastructure.models  # noqa: F401
 import app.modules.clinic.infrastructure.models  # noqa: F401
-import app.modules.subscription.infrastructure.models  # noqa: F401
+import app.modules.abonnement.infrastructure.models  # noqa: F401
 
-from app.modules.subscription.api.router import router as subscription_router
+from app.modules.abonnement.api.routeur import router as subscription_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)
@@ -114,7 +114,7 @@ async def anon_client(db: AsyncSession) -> AsyncClient:
 @pytest_asyncio.fixture
 async def seed_plan(db: AsyncSession):
     """Crée un plan de souscription en base."""
-    from app.modules.subscription.infrastructure.models import SubscriptionPlanModel
+    from app.modules.abonnement.infrastructure.modeles import SubscriptionPlanModel
     plan = SubscriptionPlanModel(
         id=1,
         name="Starter",
@@ -134,8 +134,8 @@ async def seed_plan(db: AsyncSession):
 @pytest_asyncio.fixture
 async def seed_clinic(db: AsyncSession):
     """Crée une clinique en base."""
-    from app.modules.auth.infrastructure.models import UserModel
-    from app.modules.clinic.infrastructure.models import ClinicModel
+    from app.modules.auth.infrastructure.modeles import UserModel
+    from app.modules.clinic.infrastructure.modeles import ClinicModel
     from app.core.auth.password import hash_password
 
     user = UserModel(
@@ -260,8 +260,8 @@ class TestCancelSubscription:
         self, db: AsyncSession, user_client: AsyncClient, seed_plan
     ) -> None:
         """Crée une clinique séparée pour ce test, souscrit, puis annule."""
-        from app.modules.auth.infrastructure.models import UserModel
-        from app.modules.clinic.infrastructure.models import ClinicModel
+        from app.modules.auth.infrastructure.modeles import UserModel
+        from app.modules.clinic.infrastructure.modeles import ClinicModel
         from app.core.auth.password import hash_password
 
         user = UserModel(

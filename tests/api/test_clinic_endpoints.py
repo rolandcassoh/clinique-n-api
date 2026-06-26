@@ -17,7 +17,7 @@ from app.shared.exceptions.domain import DomainException
 import app.modules.auth.infrastructure.models  # noqa: F401
 import app.modules.clinic.infrastructure.models  # noqa: F401
 
-from app.modules.clinic.api.router import router as clinic_router
+from app.modules.clinic.api.routeur import router as clinic_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)
@@ -198,8 +198,8 @@ class TestGetDoctor:
     @pytest.mark.asyncio
     async def test_get_doctor_200_si_existant(self, db: AsyncSession, anon_client: AsyncClient) -> None:
         """Crée un médecin, puis le récupère."""
-        from app.modules.auth.infrastructure.models import UserModel
-        from app.modules.clinic.infrastructure.models import ClinicModel, DoctorModel
+        from app.modules.auth.infrastructure.modeles import UserModel
+        from app.modules.clinic.infrastructure.modeles import ClinicModel, DoctorModel
         from app.core.auth.password import hash_password
 
         # Crée un user
@@ -281,7 +281,7 @@ class TestRateDoctor:
 class TestAdminCreateClinic:
     @pytest.mark.asyncio
     async def test_create_clinic_201_admin(self, db: AsyncSession, admin_client: AsyncClient) -> None:
-        from app.modules.auth.infrastructure.models import UserModel
+        from app.modules.auth.infrastructure.modeles import UserModel
         from app.core.auth.password import hash_password
 
         user = UserModel(
@@ -315,8 +315,8 @@ class TestAdminCreateClinic:
     async def test_create_clinic_409_slug_duplique(
         self, db: AsyncSession, admin_client: AsyncClient
     ) -> None:
-        from app.modules.auth.infrastructure.models import UserModel
-        from app.modules.clinic.infrastructure.models import ClinicModel
+        from app.modules.auth.infrastructure.modeles import UserModel
+        from app.modules.clinic.infrastructure.modeles import ClinicModel
         from app.core.auth.password import hash_password
 
         user = UserModel(

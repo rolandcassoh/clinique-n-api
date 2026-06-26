@@ -13,10 +13,10 @@ logger = structlog.get_logger()
 
 @dataclass
 class PushPayload:
-    title: str
+    titre: str
     body: str
     data: dict | None = None
-    image_url: str | None = None
+    url_image: str | None = None
     click_action: str | None = None
 
 
@@ -63,31 +63,31 @@ class FirebaseAdapter:
             return False
 
     async def send_push(self, fcm_token: str, payload: PushPayload) -> bool:
-        """Envoie une notification push à un token FCM."""
+        """Envoie une notification push à un jeton FCM."""
         if not self._ensure_initialized():
-            logger.info("firebase.push_skipped_not_configured", title=payload.title)
+            logger.info("firebase.push_skipped_not_configured", titre=payload.titre)
             return False
         try:
             from firebase_admin import messaging
 
             message = messaging.Message(
                 notification=messaging.Notification(
-                    title=payload.title,
+                    titre=payload.titre,
                     body=payload.body,
-                    image=payload.image_url,
+                    image=payload.url_image,
                 ),
                 data={str(k): str(v) for k, v in (payload.data or {}).items()},
-                token=fcm_token,
+                jeton=fcm_token,
                 android=messaging.AndroidConfig(priority="high"),
                 apns=messaging.APNSConfig(
                     payload=messaging.APNSPayload(aps=messaging.Aps(sound="default"))
                 ),
             )
             response = messaging.send(message)
-            logger.info("firebase.push_sent", message_id=response, title=payload.title)
+            logger.info("firebase.push_sent", message_id=response, titre=payload.titre)
             return True
         except Exception as e:
-            logger.error("firebase.push_failed", error=str(e), title=payload.title)
+            logger.error("firebase.push_failed", error=str(e), titre=payload.titre)
             return False
 
     async def send_push_to_multiple(
@@ -108,7 +108,7 @@ class FirebaseAdapter:
                 batch = fcm_tokens[i : i + BATCH_SIZE]
                 message = messaging.MulticastMessage(
                     notification=messaging.Notification(
-                        title=payload.title, body=payload.body
+                        titre=payload.titre, body=payload.body
                     ),
                     data={str(k): str(v) for k, v in (payload.data or {}).items()},
                     tokens=batch,
@@ -135,7 +135,7 @@ class FirebaseAdapter:
 
             message = messaging.Message(
                 notification=messaging.Notification(
-                    title=payload.title, body=payload.body
+                    titre=payload.titre, body=payload.body
                 ),
                 data={str(k): str(v) for k, v in (payload.data or {}).items()},
                 topic=topic,

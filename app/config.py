@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     app_name: str = "Gestion Clinique API"
     app_env: str = "development"
-    app_secret_key: str = "dev-secret-key-change-in-production"
+    app_secret_key: str = "dev-secret-cle-change-in-production"
 
     database_url: str = "mysql+asyncmy://root:root@localhost:3306/clinique_dev"
     database_pool_size: int = 20
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
 
-    encryption_key: str = "dev-encryption-key-32-bytes-long!"
+    encryption_key: str = "dev-encryption-cle-32-bytes-long!"
 
     # Stripe
     stripe_secret_key: str = ""

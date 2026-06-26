@@ -10,12 +10,12 @@ from app.config import settings
 
 logger = structlog.get_logger()
 
-# Répertoire des templates email
+# Répertoire des templates courriel
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 
 class EmailService:
-    """Service email SMTP avec templates Jinja2."""
+    """Service courriel SMTP avec templates Jinja2."""
 
     def __init__(self) -> None:
         self._env = Environment(
@@ -32,23 +32,23 @@ class EmailService:
         cc: list[str] | None = None,
         reply_to: str | None = None,
     ) -> bool:
-        """Envoie un email HTML depuis un template Jinja2."""
-        recipients = [to] if isinstance(to, str) else to
+        """Envoie un courriel HTML depuis un template Jinja2."""
+        destinataires = [to] if isinstance(to, str) else to
         try:
-            html_content = self._render(template_name, context)
-        except Exception as e:
+            contenu_html = self._render(template_name, context)
+        except Exception as erreur:
             logger.error(
-                "email.template_render_failed",
+                "courriel.rendu_template_echoue",
                 template=template_name,
-                error=str(e),
+                error=str(erreur),
             )
             return False
 
         if not settings.smtp_host or settings.smtp_host == "localhost":
-            # Mode développement : logger seulement
+            # Mode développement : journalisation uniquement, pas d'envoi réel
             logger.info(
-                "email.dev_mode_skipped",
-                to=recipients,
+                "courriel.mode_dev_ignore",
+                to=destinataires,
                 subject=subject,
                 template=template_name,
             )
@@ -56,45 +56,45 @@ class EmailService:
 
         try:
             import aiosmtplib
-            from email.mime.multipart import MIMEMultipart
-            from email.mime.text import MIMEText
+            from courriel.mime.multipart import MIMEMultipart
+            from courriel.mime.text import MIMEText
 
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = settings.smtp_from_email
-            msg["To"] = ", ".join(recipients)
+            message = MIMEMultipart("alternative")
+            message["Subject"] = subject
+            message["From"] = settings.smtp_from_email
+            message["To"] = ", ".join(destinataires)
             if cc:
-                msg["Cc"] = ", ".join(cc)
+                message["Cc"] = ", ".join(cc)
             if reply_to:
-                msg["Reply-To"] = reply_to
-            msg.attach(MIMEText(html_content, "html", "utf-8"))
+                message["Reply-To"] = reply_to
+            message.attach(MIMEText(contenu_html, "html", "utf-8"))
 
-            smtp_user = settings.smtp_user or None
-            smtp_password = settings.smtp_password or None
+            utilisateur_smtp = settings.smtp_user or None
+            mot_de_passe_smtp = settings.smtp_password or None
 
             await aiosmtplib.send(
-                msg,
+                message,
                 hostname=settings.smtp_host,
                 port=settings.smtp_port,
-                username=smtp_user,
-                password=smtp_password,
+                nom_utilisateur=utilisateur_smtp,
+                mot_de_passe=mot_de_passe_smtp,
                 start_tls=settings.smtp_port == 587,
             )
-            logger.info("email.sent", to=recipients, subject=subject)
+            logger.info("courriel.envoye", to=destinataires, subject=subject)
             return True
         except ImportError:
-            logger.warning("email.aiosmtplib_not_installed")
+            logger.warning("courriel.aiosmtplib_non_installe")
             return False
-        except Exception as e:
+        except Exception as erreur:
             logger.error(
-                "email.send_failed", to=recipients, subject=subject, error=str(e)
+                "courriel.envoi_echoue", to=destinataires, subject=subject, error=str(erreur)
             )
             return False
 
     def _render(self, template_name: str, context: dict) -> str:
-        template = self._env.get_template(f"{template_name}.html")
-        return template.render(**context)
+        gabarit = self._env.get_template(f"{template_name}.html")
+        return gabarit.render(**context)
 
 
-# Instance singleton
+# Instance singleton du service courriel
 email_service = EmailService()

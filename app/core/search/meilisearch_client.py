@@ -21,8 +21,8 @@ def get_meilisearch_client():
         client.health()  # Lève une exception si Meilisearch est inaccessible
         return client
     except ImportError:
-        logger.warning("meilisearch.library_missing", detail="meilisearch Python client not installed")
+        logger.warning("meilisearch.bibliotheque_absente", detail="Le client Python meilisearch n'est pas installé")
         return None
     except Exception as exc:
-        logger.warning("meilisearch.unavailable", error=str(exc))
+        logger.warning("meilisearch.indisponible", error=str(exc))
         return None

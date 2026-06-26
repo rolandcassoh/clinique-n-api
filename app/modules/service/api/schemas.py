@@ -15,32 +15,32 @@ class ServiceCategorySchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    name: str
-    slug: str
+    nom: str
+    identifiant_url: str
     image: str | None
     description: str | None
-    is_active: bool
-    sort_order: int
+    est_actif: bool
+    ordre_affichage: int
     created_at: datetime
     updated_at: datetime
 
 
 class ServiceCategoryCreateRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255)
-    slug: str = Field(..., min_length=1, max_length=255)
+    nom: str = Field(..., min_length=1, max_length=255)
+    identifiant_url: str = Field(..., min_length=1, max_length=255)
     image: str | None = Field(default=None, max_length=500)
     description: str | None = None
-    is_active: bool = True
-    sort_order: int = Field(default=0, ge=0)
+    est_actif: bool = True
+    ordre_affichage: int = Field(default=0, ge=0)
 
 
 class ServiceCategoryUpdateRequest(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=255)
-    slug: str | None = Field(default=None, min_length=1, max_length=255)
+    nom: str | None = Field(default=None, min_length=1, max_length=255)
+    identifiant_url: str | None = Field(default=None, min_length=1, max_length=255)
     image: str | None = Field(default=None, max_length=500)
     description: str | None = None
-    is_active: bool | None = None
-    sort_order: int | None = Field(default=None, ge=0)
+    est_actif: bool | None = None
+    ordre_affichage: int | None = Field(default=None, ge=0)
 
 
 # ---------------------------------------------------------------------------
@@ -51,21 +51,21 @@ class ServiceGallerySchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    service_id: int
+    id_service: int
     image: str
-    caption: str | None
-    sort_order: int
+    legende: str | None
+    ordre_affichage: int
 
 
 class ServiceGalleryCreateRequest(BaseModel):
     image: str = Field(..., max_length=500)
-    caption: str | None = Field(default=None, max_length=255)
-    sort_order: int = Field(default=0, ge=0)
+    legende: str | None = Field(default=None, max_length=255)
+    ordre_affichage: int = Field(default=0, ge=0)
 
 
 class GalleryReorderItem(BaseModel):
     id: int
-    sort_order: int = Field(ge=0)
+    ordre_affichage: int = Field(ge=0)
 
 
 class GalleryReorderRequest(BaseModel):
@@ -80,33 +80,33 @@ class ServicePackageSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    service_id: int
-    name: str
+    id_service: int
+    nom: str
     description: str | None
-    price: Decimal
-    sessions_count: int
-    validity_days: int
-    is_active: bool
+    prix: Decimal
+    nombre_seances: int
+    jours_validite: int
+    est_actif: bool
     created_at: datetime
     updated_at: datetime
 
 
 class ServicePackageCreateRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255)
+    nom: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
-    price: Decimal = Field(..., gt=0)
-    sessions_count: int = Field(default=1, ge=1)
-    validity_days: int = Field(default=30, ge=1)
-    is_active: bool = True
+    prix: Decimal = Field(..., gt=0)
+    nombre_seances: int = Field(default=1, ge=1)
+    jours_validite: int = Field(default=30, ge=1)
+    est_actif: bool = True
 
 
 class ServicePackageUpdateRequest(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=255)
+    nom: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None
-    price: Decimal | None = Field(default=None, gt=0)
-    sessions_count: int | None = Field(default=None, ge=1)
-    validity_days: int | None = Field(default=None, ge=1)
-    is_active: bool | None = None
+    prix: Decimal | None = Field(default=None, gt=0)
+    nombre_seances: int | None = Field(default=None, ge=1)
+    jours_validite: int | None = Field(default=None, ge=1)
+    est_actif: bool | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -117,16 +117,16 @@ class ServiceEmployeeSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    service_id: int
-    user_id: int
-    is_primary: bool
+    id_service: int
+    id_utilisateur: int
+    est_principal: bool
     created_at: datetime
     updated_at: datetime
 
 
 class ServiceEmployeeAssignRequest(BaseModel):
-    user_id: int
-    is_primary: bool = False
+    id_utilisateur: int
+    est_principal: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -137,18 +137,18 @@ class ServiceReviewSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    service_id: int
-    user_id: int
-    rating: int
-    comment: str | None
-    is_approved: bool
+    id_service: int
+    id_utilisateur: int
+    note: int
+    commentaire: str | None
+    est_approuve: bool
     created_at: datetime
     updated_at: datetime
 
 
 class ServiceReviewCreateRequest(BaseModel):
-    rating: int = Field(..., ge=1, le=5)
-    comment: str | None = None
+    note: int = Field(..., ge=1, le=5)
+    commentaire: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -159,22 +159,22 @@ class ServiceSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    vendor_id: int
-    category_id: int | None
-    name: str
-    slug: str
+    id_prestataire: int
+    id_categorie: int | None
+    nom: str
+    identifiant_url: str
     description: str | None
     short_description: str | None
-    price: Decimal
-    discount_price: Decimal | None
+    prix: Decimal
+    prix_remise: Decimal | None
     effective_price: Decimal
     is_discounted: bool
-    duration_minutes: int
-    is_active: bool
-    is_featured: bool
-    is_home_service: bool
-    max_members: int
-    average_rating: float | None
+    duree_minutes: int
+    est_actif: bool
+    est_mis_en_avant: bool
+    service_domicile: bool
+    max_membres: int
+    note_moyenne: float | None
     review_count: int
     rating_display: str
     category: ServiceCategorySchema | None = None
@@ -186,32 +186,32 @@ class ServiceSchema(BaseModel):
 
 
 class ServiceCreateRequest(BaseModel):
-    vendor_id: int
-    name: str = Field(..., min_length=1, max_length=255)
-    slug: str = Field(..., min_length=1, max_length=255)
-    price: Decimal = Field(..., gt=0)
-    category_id: int | None = None
+    id_prestataire: int
+    nom: str = Field(..., min_length=1, max_length=255)
+    identifiant_url: str = Field(..., min_length=1, max_length=255)
+    prix: Decimal = Field(..., gt=0)
+    id_categorie: int | None = None
     description: str | None = None
     short_description: str | None = Field(default=None, max_length=500)
-    discount_price: Decimal | None = Field(default=None, gt=0)
-    duration_minutes: int = Field(default=60, ge=1)
-    is_active: bool = True
-    is_featured: bool = False
-    is_home_service: bool = False
-    max_members: int = Field(default=1, ge=1)
+    prix_remise: Decimal | None = Field(default=None, gt=0)
+    duree_minutes: int = Field(default=60, ge=1)
+    est_actif: bool = True
+    est_mis_en_avant: bool = False
+    service_domicile: bool = False
+    max_membres: int = Field(default=1, ge=1)
 
 
 class ServiceUpdateRequest(BaseModel):
-    vendor_id: int | None = None
-    name: str | None = Field(default=None, min_length=1, max_length=255)
-    slug: str | None = Field(default=None, min_length=1, max_length=255)
-    price: Decimal | None = Field(default=None, gt=0)
-    category_id: int | None = None
+    id_prestataire: int | None = None
+    nom: str | None = Field(default=None, min_length=1, max_length=255)
+    identifiant_url: str | None = Field(default=None, min_length=1, max_length=255)
+    prix: Decimal | None = Field(default=None, gt=0)
+    id_categorie: int | None = None
     description: str | None = None
     short_description: str | None = Field(default=None, max_length=500)
-    discount_price: Decimal | None = Field(default=None, gt=0)
-    duration_minutes: int | None = Field(default=None, ge=1)
-    is_active: bool | None = None
-    is_featured: bool | None = None
-    is_home_service: bool | None = None
-    max_members: int | None = Field(default=None, ge=1)
+    prix_remise: Decimal | None = Field(default=None, gt=0)
+    duree_minutes: int | None = Field(default=None, ge=1)
+    est_actif: bool | None = None
+    est_mis_en_avant: bool | None = None
+    service_domicile: bool | None = None
+    max_membres: int | None = Field(default=None, ge=1)

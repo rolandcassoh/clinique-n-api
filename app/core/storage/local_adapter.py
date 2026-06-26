@@ -12,10 +12,10 @@ class LocalStorageAdapter(StoragePort):
         self._base_url = base_url.rstrip("/")
         self._root.mkdir(parents=True, exist_ok=True)
 
-    async def save(self, path: str, content: bytes, content_type: str = "application/octet-stream") -> str:
+    async def save(self, path: str, contenu: bytes, content_type: str = "application/octet-stream") -> str:
         full_path = self._root / path
         full_path.parent.mkdir(parents=True, exist_ok=True)
-        full_path.write_bytes(content)
+        full_path.write_bytes(contenu)
         return await self.get_url(path)
 
     async def delete(self, path: str) -> None:

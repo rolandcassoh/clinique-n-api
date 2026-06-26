@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.modules.appointment.domain.entities import (
+from app.modules.rendez_vous.domain.entites import (
     Appointment,
     AppointmentStatus,
     AppointmentType,

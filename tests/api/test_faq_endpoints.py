@@ -3,7 +3,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.faq.infrastructure.models import FAQModel
+from app.modules.faq.infrastructure.modeles import FAQModel
 
 
 # ---------------------------------------------------------------------------

@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.modules.tag.application.use_cases import TagUseCases
-from app.modules.tag.domain.entities import Tag
-from app.modules.tag.domain.exceptions import TagNotFoundError, TagSlugConflictError
+from app.modules.etiquette.application.cas_utilisation import TagUseCases
+from app.modules.etiquette.domain.entites import Tag
+from app.modules.etiquette.domain.exceptions import TagNotFoundError, TagSlugConflictError
 
 
 def _make_tag(id: int = 1, slug: str = "news") -> Tag:

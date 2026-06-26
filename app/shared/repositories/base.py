@@ -14,10 +14,10 @@ class CRUDRepository(Generic[ModelT]):
         self.session = session
 
     async def get_by_id(self, record_id: int) -> ModelT | None:
-        result = await self.session.get(self.model, record_id)
-        if result and result.is_deleted:
+        resultat = await self.session.get(self.model, record_id)
+        if resultat and resultat.is_deleted:
             return None
-        return result
+        return resultat
 
     async def list(
         self,
@@ -27,26 +27,26 @@ class CRUDRepository(Generic[ModelT]):
         filters: dict[str, Any] | None = None,
         include_deleted: bool = False,
     ) -> tuple[list[ModelT], int]:
-        stmt = select(self.model)
-        count_stmt = select(func.count()).select_from(self.model)
+        requete = select(self.model)
+        requete_comptage = select(func.count()).select_from(self.model)
 
         if not include_deleted:
-            stmt = stmt.where(self.model.deleted_at.is_(None))
-            count_stmt = count_stmt.where(self.model.deleted_at.is_(None))
+            requete = requete.where(self.model.deleted_at.is_(None))
+            requete_comptage = requete_comptage.where(self.model.deleted_at.is_(None))
 
         if filters:
-            for column, value in filters.items():
-                stmt = stmt.where(getattr(self.model, column) == value)
-                count_stmt = count_stmt.where(getattr(self.model, column) == value)
+            for colonne, valeur in filters.items():
+                requete = requete.where(getattr(self.model, colonne) == valeur)
+                requete_comptage = requete_comptage.where(getattr(self.model, colonne) == valeur)
 
-        total_result = await self.session.execute(count_stmt)
-        total = total_result.scalar_one()
+        resultat_total = await self.session.execute(requete_comptage)
+        total = resultat_total.scalar_one()
 
-        stmt = stmt.offset(offset).limit(limit)
-        result = await self.session.execute(stmt)
-        rows = list(result.scalars().all())
+        requete = requete.offset(offset).limit(limit)
+        resultat = await self.session.execute(requete)
+        lignes = list(resultat.scalars().all())
 
-        return rows, total
+        return lignes, total
 
     async def create(self, **data: Any) -> ModelT:
         instance = self.model(**data)
@@ -59,8 +59,8 @@ class CRUDRepository(Generic[ModelT]):
         instance = await self.get_by_id(record_id)
         if instance is None:
             return None
-        for key, value in data.items():
-            setattr(instance, key, value)
+        for cle, valeur in data.items():
+            setattr(instance, cle, valeur)
         await self.session.flush()
         await self.session.refresh(instance)
         return instance

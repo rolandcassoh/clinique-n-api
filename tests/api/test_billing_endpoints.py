@@ -14,10 +14,10 @@ from app.core.auth.jwt_handler import JWTHandler
 
 # Import des modèles
 import app.modules.auth.infrastructure.models  # noqa: F401
-import app.modules.appointment.infrastructure.models  # noqa: F401
-import app.modules.billing.infrastructure.models  # noqa: F401
+import app.modules.rendez_vous.infrastructure.models  # noqa: F401
+import app.modules.facturation.infrastructure.models  # noqa: F401
 
-from app.modules.billing.api.router import router as billing_router
+from app.modules.facturation.api.routeur import router as billing_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)

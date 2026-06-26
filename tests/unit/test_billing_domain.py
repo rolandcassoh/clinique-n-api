@@ -7,8 +7,8 @@ from decimal import Decimal
 
 import pytest
 
-from app.modules.billing.application.use_cases import _generate_reference
-from app.modules.billing.domain.entities import BillingItem, BillingRecord, BillingStatus
+from app.modules.facturation.application.cas_utilisation import _generate_reference
+from app.modules.facturation.domain.entites import BillingItem, BillingRecord, BillingStatus
 from app.core.pdf.invoice_generator import InvoiceGenerator
 
 

@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas — module clinic."""
+"""Schémas Pydantic v2 — module clinique."""
 from datetime import date, datetime, time
 from decimal import Decimal
 from typing import Optional
@@ -6,265 +6,265 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
-# ── ClinicCategory ────────────────────────────────────────────────────────────
+# ── Catégorie de clinique ─────────────────────────────────────────────────────
 
 class ClinicCategorySchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    name: str
-    slug: str
+    nom: str
+    identifiant_url: str
     image: Optional[str]
     description: Optional[str]
-    is_active: bool
-    sort_order: int
+    est_actif: bool
+    ordre_affichage: int
     created_at: datetime
 
 
 class ClinicCategoryCreateSchema(BaseModel):
-    name: str
-    slug: str
+    nom: str
+    identifiant_url: str
     image: Optional[str] = None
     description: Optional[str] = None
 
 
 class ClinicCategoryUpdateSchema(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
+    nom: Optional[str] = None
+    identifiant_url: Optional[str] = None
     image: Optional[str] = None
     description: Optional[str] = None
-    is_active: Optional[bool] = None
-    sort_order: Optional[int] = None
+    est_actif: Optional[bool] = None
+    ordre_affichage: Optional[int] = None
 
 
-# ── Clinic ────────────────────────────────────────────────────────────────────
+# ── Clinique ──────────────────────────────────────────────────────────────────
 
 class ClinicSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    owner_id: int
-    name: str
-    slug: str
+    id_proprietaire: int
+    nom: str
+    identifiant_url: str
     description: Optional[str]
-    address: Optional[str]
-    city_id: Optional[int]
-    phone: Optional[str]
-    email: Optional[str]
-    website: Optional[str]
+    adresse: Optional[str]
+    id_ville: Optional[int]
+    telephone: Optional[str]
+    courriel: Optional[str]
+    site_web: Optional[str]
     logo: Optional[str]
-    cover_image: Optional[str]
-    is_active: bool
-    is_featured: bool
+    image_couverture: Optional[str]
+    est_actif: bool
+    est_mis_en_avant: bool
     latitude: Optional[Decimal]
     longitude: Optional[Decimal]
-    commission_rate: Decimal
+    taux_commission: Decimal
     created_at: datetime
     updated_at: datetime
 
 
 class ClinicCreateSchema(BaseModel):
-    owner_id: int
-    name: str
-    slug: str
+    id_proprietaire: int
+    nom: str
+    identifiant_url: str
     description: Optional[str] = None
-    address: Optional[str] = None
-    city_id: Optional[int] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    website: Optional[str] = None
+    adresse: Optional[str] = None
+    id_ville: Optional[int] = None
+    telephone: Optional[str] = None
+    courriel: Optional[str] = None
+    site_web: Optional[str] = None
     logo: Optional[str] = None
-    cover_image: Optional[str] = None
+    image_couverture: Optional[str] = None
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
-    commission_rate: Decimal = Decimal("0")
+    taux_commission: Decimal = Decimal("0")
 
 
 class ClinicUpdateSchema(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
+    nom: Optional[str] = None
+    identifiant_url: Optional[str] = None
     description: Optional[str] = None
-    address: Optional[str] = None
-    city_id: Optional[int] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    website: Optional[str] = None
+    adresse: Optional[str] = None
+    id_ville: Optional[int] = None
+    telephone: Optional[str] = None
+    courriel: Optional[str] = None
+    site_web: Optional[str] = None
     logo: Optional[str] = None
-    cover_image: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_featured: Optional[bool] = None
+    image_couverture: Optional[str] = None
+    est_actif: Optional[bool] = None
+    est_mis_en_avant: Optional[bool] = None
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
-    commission_rate: Optional[Decimal] = None
+    taux_commission: Optional[Decimal] = None
 
 
-# ── ClinicService ─────────────────────────────────────────────────────────────
+# ── Service de clinique ───────────────────────────────────────────────────────
 
 class ClinicServiceSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    clinic_id: int
-    name: str
+    id_clinique: int
+    nom: str
     description: Optional[str]
-    price: Decimal
-    duration_minutes: int
-    is_active: bool
+    prix: Decimal
+    duree_minutes: int
+    est_actif: bool
     created_at: datetime
 
 
 class ClinicServiceCreateSchema(BaseModel):
-    name: str
+    nom: str
     description: Optional[str] = None
-    price: Decimal = Decimal("0")
-    duration_minutes: int = 30
+    prix: Decimal = Decimal("0")
+    duree_minutes: int = 30
 
 
 class ClinicServiceUpdateSchema(BaseModel):
-    name: Optional[str] = None
+    nom: Optional[str] = None
     description: Optional[str] = None
-    price: Optional[Decimal] = None
-    duration_minutes: Optional[int] = None
-    is_active: Optional[bool] = None
+    prix: Optional[Decimal] = None
+    duree_minutes: Optional[int] = None
+    est_actif: Optional[bool] = None
 
 
-# ── Doctor ────────────────────────────────────────────────────────────────────
+# ── Médecin ───────────────────────────────────────────────────────────────────
 
 class DoctorSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    user_id: int
-    clinic_id: int
-    speciality: Optional[str]
+    id_utilisateur: int
+    id_clinique: int
+    specialite: Optional[str]
     qualification: Optional[str]
-    experience_years: int
-    consultation_fee: Decimal
-    advance_payment_amount: Decimal
-    is_available: bool
-    average_rating: Optional[float]
+    annees_experience: int
+    honoraires_consultation: Decimal
+    montant_avance: Decimal
+    est_disponible: bool
+    note_moyenne: Optional[float]
     created_at: datetime
     updated_at: datetime
 
 
 class DoctorCreateSchema(BaseModel):
-    user_id: int
-    speciality: Optional[str] = None
+    id_utilisateur: int
+    specialite: Optional[str] = None
     qualification: Optional[str] = None
-    experience_years: int = 0
-    consultation_fee: Decimal = Decimal("0")
-    advance_payment_amount: Decimal = Decimal("0")
+    annees_experience: int = 0
+    honoraires_consultation: Decimal = Decimal("0")
+    montant_avance: Decimal = Decimal("0")
 
 
 class DoctorUpdateSchema(BaseModel):
-    speciality: Optional[str] = None
+    specialite: Optional[str] = None
     qualification: Optional[str] = None
-    experience_years: Optional[int] = None
-    consultation_fee: Optional[Decimal] = None
-    advance_payment_amount: Optional[Decimal] = None
-    is_available: Optional[bool] = None
+    annees_experience: Optional[int] = None
+    honoraires_consultation: Optional[Decimal] = None
+    montant_avance: Optional[Decimal] = None
+    est_disponible: Optional[bool] = None
 
 
 class DoctorAvailabilitySchema(BaseModel):
-    is_available: bool
+    est_disponible: bool
 
 
-# ── DoctorSession ─────────────────────────────────────────────────────────────
+# ── Session médecin ───────────────────────────────────────────────────────────
 
 class DoctorSessionSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    doctor_id: int
-    day_of_week: int
-    start_time: time
-    end_time: time
-    slot_duration_minutes: int
-    max_patients_per_slot: int
-    is_active: bool
+    id_medecin: int
+    jour_semaine: int
+    heure_debut: time
+    heure_fin: time
+    duree_creneau_minutes: int
+    max_patients_par_creneau: int
+    est_actif: bool
     created_at: datetime
 
 
 class DoctorSessionCreateSchema(BaseModel):
-    day_of_week: int = Field(..., ge=0, le=6)
-    start_time: time
-    end_time: time
-    slot_duration_minutes: int = 30
-    max_patients_per_slot: int = 1
+    jour_semaine: int = Field(..., ge=0, le=6)
+    heure_debut: time
+    heure_fin: time
+    duree_creneau_minutes: int = 30
+    max_patients_par_creneau: int = 1
 
 
 class DoctorSessionUpdateSchema(BaseModel):
-    day_of_week: Optional[int] = Field(None, ge=0, le=6)
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
-    slot_duration_minutes: Optional[int] = None
-    max_patients_per_slot: Optional[int] = None
-    is_active: Optional[bool] = None
+    jour_semaine: Optional[int] = Field(None, ge=0, le=6)
+    heure_debut: Optional[time] = None
+    heure_fin: Optional[time] = None
+    duree_creneau_minutes: Optional[int] = None
+    max_patients_par_creneau: Optional[int] = None
+    est_actif: Optional[bool] = None
 
 
-# ── DoctorLeave ───────────────────────────────────────────────────────────────
+# ── Congé médecin ─────────────────────────────────────────────────────────────
 
 class DoctorLeaveSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    doctor_id: int
-    leave_date: date
-    reason: Optional[str]
-    is_full_day: bool
-    start_time: Optional[time]
-    end_time: Optional[time]
+    id_medecin: int
+    date_absence: date
+    motif: Optional[str]
+    journee_complete: bool
+    heure_debut: Optional[time]
+    heure_fin: Optional[time]
     created_at: datetime
 
 
 class DoctorLeaveCreateSchema(BaseModel):
-    leave_date: date
-    reason: Optional[str] = None
-    is_full_day: bool = True
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
+    date_absence: date
+    motif: Optional[str] = None
+    journee_complete: bool = True
+    heure_debut: Optional[time] = None
+    heure_fin: Optional[time] = None
 
 
-# ── DoctorRating ──────────────────────────────────────────────────────────────
+# ── Note médecin ──────────────────────────────────────────────────────────────
 
 class DoctorRatingSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    doctor_id: int
-    user_id: int
-    appointment_id: Optional[int]
-    rating: int
-    comment: Optional[str]
-    is_approved: bool
+    id_medecin: int
+    id_utilisateur: int
+    id_rendez_vous: Optional[int]
+    note: int
+    commentaire: Optional[str]
+    est_approuve: bool
     created_at: datetime
 
 
 class DoctorRatingCreateSchema(BaseModel):
-    rating: int = Field(..., ge=1, le=5)
-    comment: Optional[str] = None
-    appointment_id: Optional[int] = None
+    note: int = Field(..., ge=1, le=5)
+    commentaire: Optional[str] = None
+    id_rendez_vous: Optional[int] = None
 
 
-# ── Receptionist ──────────────────────────────────────────────────────────────
+# ── Réceptionniste ────────────────────────────────────────────────────────────
 
 class ReceptionistSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    user_id: int
-    clinic_id: int
-    is_active: bool
+    id_utilisateur: int
+    id_clinique: int
+    est_actif: bool
     created_at: datetime
 
 
 class ReceptionistCreateSchema(BaseModel):
-    user_id: int
+    id_utilisateur: int
 
 
-# ── Slots ─────────────────────────────────────────────────────────────────────
+# ── Créneaux disponibles ──────────────────────────────────────────────────────
 
 class AvailableSlotsSchema(BaseModel):
-    doctor_id: int
+    id_medecin: int
     date: date
     slots: list[datetime]

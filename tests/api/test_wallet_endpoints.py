@@ -14,9 +14,9 @@ from app.core.auth.jwt_handler import JWTHandler
 
 # Import des modèles
 import app.modules.auth.infrastructure.models  # noqa: F401
-import app.modules.wallet.infrastructure.models  # noqa: F401
+import app.modules.portefeuille.infrastructure.models  # noqa: F401
 
-from app.modules.wallet.api.router import router as wallet_router
+from app.modules.portefeuille.api.routeur import router as wallet_router
 
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 _engine = create_async_engine(_TEST_DB_URL, echo=False)

@@ -1,3 +1,4 @@
+"""Schemas Pydantic v2 du module slider."""
 from pydantic import BaseModel, ConfigDict
 
 
@@ -5,32 +6,32 @@ class SliderSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    title: str
-    subtitle: str | None
+    titre: str
+    sous_titre: str | None
     image: str
-    link: str | None
-    button_text: str | None
+    lien: str | None
+    texte_bouton: str | None
     position: int
 
 
 class SliderCreateSchema(BaseModel):
-    title: str
-    subtitle: str | None = None
+    titre: str
+    sous_titre: str | None = None
     image: str
-    link: str | None = None
-    button_text: str | None = None
+    lien: str | None = None
+    texte_bouton: str | None = None
     position: int = 0
-    is_active: bool = True
+    est_actif: bool = True
 
 
 class SliderUpdateSchema(BaseModel):
-    title: str
-    subtitle: str | None = None
+    titre: str
+    sous_titre: str | None = None
     image: str
-    link: str | None = None
-    button_text: str | None = None
+    lien: str | None = None
+    texte_bouton: str | None = None
     position: int = 0
-    is_active: bool = True
+    est_actif: bool = True
 
 
 class SliderReorderSchema(BaseModel):

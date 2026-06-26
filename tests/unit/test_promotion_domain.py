@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.modules.promotion.application.use_cases import ValidatePromotionUseCase
-from app.modules.promotion.domain.entities import Promotion
+from app.modules.promotion.application.cas_utilisation import ValidatePromotionUseCase
+from app.modules.promotion.domain.entites import Promotion
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

@@ -1,184 +1,201 @@
-# Clinique N — Backend API
+# 🏥 Clinique N - API Backend (FastAPI)
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green?logo=fastapi) ![License](https://img.shields.io/badge/License-MIT-yellow)
+API REST pour le système de gestion de clinique médicale numérique.
 
-API backend asynchrone pour la plateforme **Clinique N**, construite avec FastAPI selon les principes de l'**Architecture Hexagonale** (Ports & Adapters). Couvre 25 modules métier répartis en 5 phases.
+## 🚀 Technologies
 
----
+- **Framework** : FastAPI 0.115.6
+- **Langage** : Python 3.12.8
+- **Base de données** : MySQL 8.4.3 avec SQLAlchemy 2.0 (async)
+- **Cache** : Redis 7.4.1
+- **Queue** : Celery 5.4.0
+- **Recherche** : Meilisearch 1.11.3
+- **Conteneurisation** : Docker & Docker Compose
 
-## Stack technique
+## 📁 Structure du Projet
 
-| Composant | Version |
-|-----------|---------|
-| Python | 3.12 |
-| FastAPI | 0.115+ |
-| SQLAlchemy | 2.0 async |
-| Alembic | migrations |
-| Pydantic | v2 |
-| Celery + Redis | tâches asynchrones |
-| MySQL | 8.0 |
-| Docker / Docker Compose | déploiement local |
+```
+python-api/
+├── app/
+│   ├── core/              # Infrastructure transversale
+│   │   ├── auth/          # JWT, OAuth, TOTP
+│   │   ├── cache/         # Abstraction Redis
+│   │   ├── middleware/    # RBAC, logging, CORS
+│   │   └── ...
+│   ├── modules/           # Modules métier
+│   │   ├── auth/
+│   │   ├── clinic/
+│   │   ├── rendez_vous/
+│   │   ├── consultation/
+│   │   ├── facturation/
+│   │   └── ...
+│   ├── shared/            # Code partagé
+│   ├── main.py           # Point d'entrée FastAPI
+│   ├── config.py         # Configuration Pydantic
+│   └── celery_app.py     # Configuration Celery
+├── alembic/              # Migrations de base de données
+├── tests/                # Tests unitaires et d'intégration
+├── docker-compose.yml
+├── Dockerfile
+└── pyproject.toml        # Dépendances Poetry
 
----
+```
 
-## Prérequis
+## 🛠️ Installation et Démarrage
 
-- Python 3.12+
-- [Poetry](https://python-poetry.org/) ou `uv`
-- Docker & Docker Compose
-- MySQL 8.0 (ou via Docker)
-- Redis 7+
+### Prérequis
+- Docker Engine 20.10+
+- Docker Compose 2.0+
 
----
-
-## Installation
+### Démarrage rapide
 
 ```bash
-# Cloner le dépôt
-git clone https://github.com/roland171993/clinique-n-backend.git
-cd clinique-n-backend
+# 1. Cloner le dépôt
+git clone https://github.com/votre-organisation/clinique-n-api.git
+cd clinique-n-api
 
-# Installer les dépendances
-poetry install
-# ou avec uv :
-uv sync
+# 2. Copier le fichier d'environnement
+cp .env.example .env
+
+# 3. Démarrer tous les services
+docker compose up -d
+
+# 4. Vérifier la santé
+./check_health.sh
 ```
 
----
+### Services disponibles
 
-## Lancer le projet
+| Service | URL | Description |
+|---------|-----|-------------|
+| API | http://localhost:8000 | API REST principale |
+| Swagger UI | http://localhost:8000/docs | Documentation interactive |
+| ReDoc | http://localhost:8000/redoc | Documentation alternative |
+| MailHog | http://localhost:8025 | Interface de test email |
+| Meilisearch | http://localhost:7700 | Interface de recherche |
+| MySQL | localhost:3309 | Base de données |
+| Redis | localhost:6379 | Cache et broker |
 
-```bash
-# Lancer tous les services (API + MySQL + Redis + Celery)
-docker-compose up --build
+## 📚 Documentation
 
-# En développement (rechargement automatique)
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+- [Guide de déploiement](DEPLOYMENT.md)
+- [Changelog](CHANGELOG.md)
+- [Documentation API](http://localhost:8000/docs) (après démarrage)
 
-L'API est disponible sur `http://localhost:8000`
-Documentation interactive : `http://localhost:8000/docs`
-
----
-
-## Variables d'environnement
-
-Copier `.env.example` en `.env` et renseigner les valeurs :
-
-```env
-# Base de données
-DATABASE_URL=mysql+asyncmy://user:password@localhost:3306/clinique_n
-
-# Sécurité
-SECRET_KEY=your-secret-key
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
-
-# Redis / Celery
-REDIS_URL=redis://localhost:6379/0
-
-# Email
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=no-reply@clinique-n.com
-SMTP_PASSWORD=your-smtp-password
-
-# Stripe (paiements)
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
-
----
-
-## Modules (25 modules — 5 phases)
-
-### Phase 0 — Socle
-- `auth` — Authentification JWT, rôles, permissions
-- `language` — Internationalisation (i18n)
-- `currency` — Gestion des devises
-- `constant` — Paramètres système
-- `world` — Pays, villes, régions
-
-### Phase 1 — Entités métier core
-- `clinic` — Gestion des cliniques
-- `customer` — Patients / utilisateurs
-- `service` — Services médicaux
-- `tag` — Étiquettes / catégories
-- `faq` — Foire aux questions
-
-### Phase 2 — Opérations cliniques
-- `appointment` — Prise et gestion des rendez-vous
-- `encounter` — Consultations médicales
-- `vital` — Signes vitaux
-- `request_service` — Demandes de services
-- `subscription` — Abonnements clinique
-
-### Phase 3 — Finance
-- `billing` — Facturation & paiements
-- `wallet` — Portefeuille électronique
-- `commission` — Commissions prestataires
-- `tax` — Gestion des taxes
-- `promotion` — Promotions & codes promo
-
-### Phase 4 — Marketing & contenu
-- `blog` — Articles et actualités
-- `slider` — Bannières & diapositives
-- `page` — Pages statiques
-
-### Phase 5 — Logistique & produits
-- `logistic` — Livraison et logistique
-- `product` — Catalogue produits
-
----
-
-## Tests
+## 🧪 Tests
 
 ```bash
 # Lancer tous les tests
-pytest
+docker compose exec api pytest
 
-# Avec couverture de code
-pytest --cov=app --cov-report=html
+# Tests avec couverture
+docker compose exec api pytest --cov=app --cov-report=html
 
-# Rapport HTML disponible dans htmlcov/index.html
+# Tests d'un module spécifique
+docker compose exec api pytest tests/unit/modules/auth/
 ```
 
----
+## 🔧 Commandes Utiles
 
-## Architecture hexagonale
-
-```
-app/
-├── modules/
-│   └── <module>/
-│       ├── domain/          # Entités, value objects, règles métier
-│       ├── application/     # Cas d'usage (use cases), services applicatifs
-│       ├── infrastructure/  # Repositories SQLAlchemy, adapters externes
-│       └── api/             # Routers FastAPI, schémas Pydantic
-├── core/                    # Configuration, sécurité transversale
-├── shared/                  # Utilitaires partagés
-├── database.py              # Session async SQLAlchemy
-├── dependencies.py          # Injection de dépendances FastAPI
-└── main.py                  # Point d'entrée de l'application
-```
-
----
-
-## Migrations Alembic
+### Gestion des conteneurs
 
 ```bash
-# Créer une nouvelle migration
-alembic revision --autogenerate -m "description"
+# Démarrer les services
+docker compose up -d
+
+# Arrêter les services
+docker compose down
+
+# Voir les logs
+docker compose logs -f api
+
+# Rebuild après modification
+docker compose build api celery
+docker compose up -d
+```
+
+### Base de données
+
+```bash
+# Créer une migration
+docker compose exec api alembic revision --autogenerate -m "description"
 
 # Appliquer les migrations
-alembic upgrade head
+docker compose exec api alembic upgrade head
 
 # Revenir en arrière
-alembic downgrade -1
+docker compose exec api alembic downgrade -1
 ```
+
+### Développement
+
+```bash
+# Formater le code
+docker compose exec api ruff format app
+
+# Linter
+docker compose exec api ruff check app
+
+# Type checking
+docker compose exec api mypy app
+```
+
+## 🔐 Sécurité
+
+**⚠️ Important** : Avant le déploiement en production, modifiez les clés secrètes dans `.env` :
+- `APP_SECRET_KEY`
+- `JWT_SECRET_KEY`
+- `ENCRYPTION_KEY`
+
+Générez des clés sécurisées :
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+## 🌍 Variables d'Environnement
+
+Voir `.env.example` pour la liste complète des variables configurables.
+
+## 📊 Architecture
+
+L'API suit une architecture en couches :
+
+1. **API Layer** (FastAPI routers) : Points d'entrée HTTP
+2. **Application Layer** (Use Cases) : Logique métier
+3. **Domain Layer** : Entités et règles métier
+4. **Infrastructure Layer** : Accès aux données (SQLAlchemy)
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/nouvelle-fonctionnalite`)
+3. Commit les changements (`git commit -m 'Ajout nouvelle fonctionnalité'`)
+4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
+5. Ouvrir une Pull Request
+
+## 📝 Conventions
+
+- **Langue du code** : Français (variables, fonctions, commentaires)
+- **Style** : PEP 8 avec Ruff
+- **Type hints** : Obligatoires (mypy strict)
+- **Tests** : Couverture minimale de 85%
+
+## 📄 Licence
+
+Propriétaire - Tous droits réservés © 2026 Clinique N
+
+## 👥 Équipe
+
+- **Architecture** : Équipe Backend Clinique N
+- **Développement** : Contributeurs Clinique N
+
+## 📞 Support
+
+Pour toute question ou problème :
+- Ouvrir une issue sur GitHub
+- Contact : support@clinique-n.com
 
 ---
 
-## License
-
-MIT © 2024 Clinique N
+**Version** : 0.1.0  
+**Dernière mise à jour** : Juin 2026

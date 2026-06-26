@@ -3,7 +3,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.world.infrastructure.models import CityModel, CountryModel, StateModel
+from app.modules.monde.infrastructure.modeles import CityModel, CountryModel, StateModel
 
 
 # ---------------------------------------------------------------------------

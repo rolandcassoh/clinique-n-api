@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.modules.clinic.application.use_cases import GetAvailableSlotsUseCase
-from app.modules.clinic.domain.entities import DoctorLeave, DoctorSession, TimeSlot
+from app.modules.clinic.application.cas_utilisation import GetAvailableSlotsUseCase
+from app.modules.clinic.domain.entites import DoctorLeave, DoctorSession, TimeSlot
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

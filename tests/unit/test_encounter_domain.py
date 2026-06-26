@@ -3,14 +3,14 @@ from __future__ import annotations
 
 import pytest
 
-from app.modules.encounter.domain.entities import (
+from app.modules.consultation.domain.entites import (
     BodyChart,
     EncounterStatus,
     MedicalReport,
     PatientEncounter,
     Prescription,
 )
-from app.modules.encounter.domain.exceptions import UnauthorizedMedicalAccessError
+from app.modules.consultation.domain.exceptions import UnauthorizedMedicalAccessError
 from app.core.crypto.field_encryption import FieldEncryption
 
 

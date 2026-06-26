@@ -8,5 +8,5 @@ class PageNotFoundError(EntityNotFoundError):
 
 
 class PageSlugAlreadyExistsError(ConflictError):
-    def __init__(self, slug: str) -> None:
-        super().__init__(f"A page with slug '{slug}' already exists.")
+    def __init__(self, identifiant_url: str) -> None:
+        super().__init__(f"Une page avec le identifiant_url '{identifiant_url}' existe déjà.")

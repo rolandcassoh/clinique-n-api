@@ -11,7 +11,7 @@ from app.core.payments.port import PaymentIntent, PaymentPort, RefundResult
 class StripeAdapter(PaymentPort):
     """
     Adaptateur Stripe complet.
-    En développement (sans clé API configurée), retourne des stubs.
+    En développement (sans clé API configurée), retourne des stubs de test.
     """
 
     def __init__(self) -> None:
@@ -33,29 +33,29 @@ class StripeAdapter(PaymentPort):
 
     async def create_payment_intent(
         self,
-        amount: Decimal,
-        currency: str,
+        montant: Decimal,
+        devise: str,
         metadata: Optional[dict] = None,
     ) -> PaymentIntent:
         if not self._stripe or not self._api_key:
-            # Stub dev
+            # Stub de développement
             return PaymentIntent(
                 id="pi_test_stub",
-                amount=amount,
-                currency=currency,
-                status="requires_payment_method",
+                montant=montant,
+                devise=devise,
+                statut="requires_payment_method",
                 client_secret="test_client_secret_stub",
             )
         intent = self._stripe.PaymentIntent.create(
-            amount=int(amount * 100),
-            currency=currency.lower(),
+            montant=int(montant * 100),
+            devise=devise.lower(),
             metadata=metadata or {},
         )
         return PaymentIntent(
             id=intent.id,
-            amount=Decimal(str(intent.amount / 100)),
-            currency=intent.currency.upper(),
-            status=intent.status,
+            montant=Decimal(str(intent.montant / 100)),
+            devise=intent.devise.upper(),
+            statut=intent.statut,
             client_secret=intent.client_secret,
         )
 
@@ -63,54 +63,54 @@ class StripeAdapter(PaymentPort):
         if not self._stripe or not self._api_key:
             return PaymentIntent(
                 id=payment_intent_id,
-                amount=Decimal("0"),
-                currency="XAF",
-                status="succeeded",
+                montant=Decimal("0"),
+                devise="XAF",
+                statut="succeeded",
                 client_secret=None,
             )
         intent = self._stripe.PaymentIntent.retrieve(payment_intent_id)
         return PaymentIntent(
             id=intent.id,
-            amount=Decimal(str(intent.amount / 100)),
-            currency=intent.currency.upper(),
-            status=intent.status,
+            montant=Decimal(str(intent.montant / 100)),
+            devise=intent.devise.upper(),
+            statut=intent.statut,
             client_secret=intent.client_secret,
         )
 
     async def refund(
-        self, payment_intent_id: str, amount: Optional[Decimal] = None
+        self, payment_intent_id: str, montant: Optional[Decimal] = None
     ) -> RefundResult:
         if not self._stripe or not self._api_key:
             return RefundResult(
                 id=f"re_test_{payment_intent_id}",
-                amount=amount or Decimal("0"),
-                status="refunded",
+                montant=montant or Decimal("0"),
+                statut="refunded",
             )
         params: dict = {"payment_intent": payment_intent_id}
-        if amount is not None:
-            params["amount"] = int(amount * 100)
+        if montant is not None:
+            params["montant"] = int(montant * 100)
         refund = self._stripe.Refund.create(**params)
         return RefundResult(
             id=refund.id,
-            amount=Decimal(str(refund.amount / 100)),
-            status="refunded",
+            montant=Decimal(str(refund.montant / 100)),
+            statut="refunded",
         )
 
     async def get_payment(self, payment_intent_id: str) -> PaymentIntent:
         if not self._stripe or not self._api_key:
             return PaymentIntent(
                 id=payment_intent_id,
-                amount=Decimal("0"),
-                currency="XAF",
-                status="succeeded",
+                montant=Decimal("0"),
+                devise="XAF",
+                statut="succeeded",
                 client_secret=None,
             )
         intent = self._stripe.PaymentIntent.retrieve(payment_intent_id)
         return PaymentIntent(
             id=intent.id,
-            amount=Decimal(str(intent.amount / 100)),
-            currency=intent.currency.upper(),
-            status=intent.status,
+            montant=Decimal(str(intent.montant / 100)),
+            devise=intent.devise.upper(),
+            statut=intent.statut,
             client_secret=intent.client_secret,
         )
 
@@ -120,12 +120,12 @@ class StripeAdapter(PaymentPort):
             return json.loads(payload)
         try:
             from app.config import settings
-            webhook_secret = getattr(settings, "stripe_webhook_secret", None)
-            if webhook_secret:
-                event = self._stripe.Webhook.construct_event(
-                    payload, signature, webhook_secret
+            secret_webhook = getattr(settings, "stripe_webhook_secret", None)
+            if secret_webhook:
+                evenement = self._stripe.Webhook.construct_event(
+                    payload, signature, secret_webhook
                 )
-                return dict(event)
+                return dict(evenement)
         except Exception:
             pass
         return json.loads(payload)

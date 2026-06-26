@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status as statut
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,33 +20,33 @@ async def get_current_user(
 ) -> dict[str, Any]:
     if credentials is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=statut.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    token = credentials.credentials
-    token_hash = JWTHandler.hash_token(token)
-    is_revoked = await redis.get(f"token:blacklist:{token_hash}")
-    if is_revoked:
+    jeton = credentials.credentials
+    token_hash = JWTHandler.hash_token(jeton)
+    est_revoque = await redis.get(f"jeton:blacklist:{token_hash}")
+    if est_revoque:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=statut.HTTP_401_UNAUTHORIZED,
             detail="Token has been revoked",
         )
 
     try:
-        payload = JWTHandler.decode_access_token(token)
+        payload = JWTHandler.decode_access_token(jeton)
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
+            status_code=statut.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired jeton",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
     return {
         "id": int(payload["sub"]),
         "roles": payload.get("roles", []),
-        "token": token,
+        "jeton": jeton,
         "payload": payload,
     }
 
@@ -56,7 +56,7 @@ def require_role(*roles: str) -> Callable[..., Any]:
         user_roles: list[str] = user.get("roles", [])
         if not any(r in user_roles for r in roles):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=statut.HTTP_403_FORBIDDEN,
                 detail=f"Required role(s): {list(roles)}",
             )
         return user
@@ -69,7 +69,7 @@ def require_permission(permission: str) -> Callable[..., Any]:
         user_permissions: list[str] = user.get("permissions", [])
         if permission not in user_permissions:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=statut.HTTP_403_FORBIDDEN,
                 detail=f"Permission '{permission}' required",
             )
         return user

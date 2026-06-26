@@ -14,32 +14,32 @@ logger = structlog.get_logger()
 
 @dataclass
 class ServiceHealth:
-    name: str
-    status: str  # "healthy" | "degraded" | "unhealthy"
+    nom: str
+    statut: str  # "healthy" | "degraded" | "unhealthy"
     latency_ms: float
     details: dict = field(default_factory=dict)
 
 
 @dataclass
 class HealthReport:
-    status: str
+    statut: str
     timestamp: str
     version: str
     services: list[ServiceHealth] = field(default_factory=list)
 
     @property
     def is_healthy(self) -> bool:
-        return self.status == "healthy"
+        return self.statut == "healthy"
 
     def to_dict(self) -> dict:
         return {
-            "status": self.status,
+            "statut": self.statut,
             "timestamp": self.timestamp,
             "version": self.version,
             "services": [
                 {
-                    "name": s.name,
-                    "status": s.status,
+                    "nom": s.nom,
+                    "statut": s.statut,
                     "latency_ms": s.latency_ms,
                     "details": s.details,
                 }
@@ -50,70 +50,70 @@ class HealthReport:
 
 async def check_database() -> ServiceHealth:
     """Vérifie la connectivité à la base de données."""
-    start = time.monotonic()
+    debut = time.monotonic()
     try:
         from app.database import AsyncSessionLocal
         from sqlalchemy import text
 
         async with AsyncSessionLocal() as session:
             await session.execute(text("SELECT 1"))
-        latency = (time.monotonic() - start) * 1000
-        return ServiceHealth("database", "healthy", round(latency, 2))
-    except Exception as e:
-        latency = (time.monotonic() - start) * 1000
-        logger.warning("health.database_unhealthy", error=str(e))
+        latence = (time.monotonic() - debut) * 1000
+        return ServiceHealth("database", "healthy", round(latence, 2))
+    except Exception as erreur:
+        latence = (time.monotonic() - debut) * 1000
+        logger.warning("sante.base_de_donnees_indisponible", error=str(erreur))
         return ServiceHealth(
-            "database", "unhealthy", round(latency, 2), {"error": str(e)}
+            "database", "unhealthy", round(latence, 2), {"error": str(erreur)}
         )
 
 
 async def check_redis() -> ServiceHealth:
     """Vérifie la connectivité à Redis."""
-    start = time.monotonic()
+    debut = time.monotonic()
     try:
         import redis.asyncio as aioredis
 
         r = aioredis.from_url(settings.redis_url, socket_connect_timeout=2)
         await r.ping()
         await r.aclose()
-        latency = (time.monotonic() - start) * 1000
-        return ServiceHealth("redis", "healthy", round(latency, 2))
-    except Exception as e:
-        latency = (time.monotonic() - start) * 1000
-        logger.warning("health.redis_degraded", error=str(e))
+        latence = (time.monotonic() - debut) * 1000
+        return ServiceHealth("redis", "healthy", round(latence, 2))
+    except Exception as erreur:
+        latence = (time.monotonic() - debut) * 1000
+        logger.warning("sante.redis_degrade", error=str(erreur))
         return ServiceHealth(
-            "redis", "degraded", round(latency, 2), {"error": str(e)}
+            "redis", "degraded", round(latence, 2), {"error": str(erreur)}
         )
 
 
 async def check_meilisearch() -> ServiceHealth:
     """Vérifie la connectivité à Meilisearch."""
-    start = time.monotonic()
+    debut = time.monotonic()
     try:
         import httpx
 
         async with httpx.AsyncClient(timeout=3.0) as client:
-            response = await client.get(f"{settings.meilisearch_url}/health")
-        latency = (time.monotonic() - start) * 1000
-        if response.status_code == 200:
-            return ServiceHealth("meilisearch", "healthy", round(latency, 2))
+            reponse = await client.get(f"{settings.meilisearch_url}/health")
+        latence = (time.monotonic() - debut) * 1000
+        if reponse.status_code == 200:
+            return ServiceHealth("meilisearch", "healthy", round(latence, 2))
         return ServiceHealth(
             "meilisearch",
             "degraded",
-            round(latency, 2),
-            {"status_code": response.status_code},
+            round(latence, 2),
+            {"status_code": reponse.status_code},
         )
-    except Exception as e:
-        latency = (time.monotonic() - start) * 1000
-        logger.warning("health.meilisearch_degraded", error=str(e))
+    except Exception as erreur:
+        latence = (time.monotonic() - debut) * 1000
+        logger.warning("sante.meilisearch_degrade", error=str(erreur))
         return ServiceHealth(
-            "meilisearch", "degraded", round(latency, 2), {"error": str(e)}
+            "meilisearch", "degraded", round(latence, 2), {"error": str(erreur)}
         )
 
 
 async def get_health_report() -> HealthReport:
     """Effectue tous les health checks en parallèle et retourne le rapport global."""
-    checks = await asyncio.gather(
+    verifications = await asyncio.gather(
         check_database(),
         check_redis(),
         check_meilisearch(),
@@ -121,25 +121,25 @@ async def get_health_report() -> HealthReport:
     )
 
     services: list[ServiceHealth] = []
-    for check in checks:
-        if isinstance(check, Exception):
+    for verification in verifications:
+        if isinstance(verification, Exception):
             services.append(
-                ServiceHealth("unknown", "unhealthy", 0.0, {"error": str(check)})
+                ServiceHealth("unknown", "unhealthy", 0.0, {"error": str(verification)})
             )
         else:
-            services.append(check)
+            services.append(verification)
 
-    # Status global : unhealthy si DB down, degraded si autres services dégradés
-    db_health = next((s for s in services if s.name == "database"), None)
-    if db_health and db_health.status == "unhealthy":
-        overall = "unhealthy"
-    elif any(s.status != "healthy" for s in services):
-        overall = "degraded"
+    # Statut global : unhealthy si la BDD est down, degraded si d'autres services sont dégradés
+    sante_bdd = next((s for s in services if s.nom == "database"), None)
+    if sante_bdd and sante_bdd.statut == "unhealthy":
+        statut_global = "unhealthy"
+    elif any(s.statut != "healthy" for s in services):
+        statut_global = "degraded"
     else:
-        overall = "healthy"
+        statut_global = "healthy"
 
     return HealthReport(
-        status=overall,
+        statut=statut_global,
         timestamp=datetime.now(timezone.utc).isoformat(),
         version="2.0.0",
         services=services,

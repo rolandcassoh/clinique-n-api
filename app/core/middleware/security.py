@@ -24,7 +24,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        response = await call_next(request)
-        for header, value in _SECURITY_HEADERS.items():
-            response.headers[header] = value
-        return response
+        reponse = await call_next(request)
+        # Injecter les en-têtes de sécurité dans chaque réponse
+        for entete, valeur in _SECURITY_HEADERS.items():
+            reponse.headers[entete] = valeur
+        return reponse
