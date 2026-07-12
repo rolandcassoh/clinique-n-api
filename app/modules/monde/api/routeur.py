@@ -1,9 +1,11 @@
 """Routeur FastAPI du module world — pays, états et villes."""
 from typing import Annotated
 
+import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, HTTPException, Query, status as statut
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.cache.redis_client import get_redis
 from app.database import get_db
 from app.modules.monde.api.schemas import CitySchema, CountrySchema, StateSchema
 from app.modules.monde.application.cas_utilisation import (
@@ -29,6 +31,7 @@ router = APIRouter(tags=["Monde"])
 # ---------------------------------------------------------------------------
 
 DbDep = Annotated[AsyncSession, Depends(get_db)]
+RedisDep = Annotated[aioredis.Redis, Depends(get_redis)]
 
 
 def _country_repo(db: DbDep) -> SQLAlchemyCountryRepository:
@@ -54,13 +57,13 @@ async def list_countries(
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = 20,
     repo: SQLAlchemyCountryRepository = Depends(_country_repo),
+    redis: RedisDep = None,
 ) -> Page[CountrySchema]:
     """Liste paginée des pays avec filtre optionnel par nom."""
     params = PaginationParams(page=page, per_page=per_page)
-    # TODO: injecter redis via Depends(get_redis) quand l'Agent 1 expose la dépendance Redis
-    uc = ListCountriesUseCase(repo, redis=None)
+    uc = ListCountriesUseCase(repo, redis=redis)
     resultat = await uc.execute(params, search)
-    return resultat  # type: ignore[return-valeur]
+    return resultat  # type: ignore[return-value]
 
 
 @router.get("/pays/{id_pays}", response_model=CountrySchema)

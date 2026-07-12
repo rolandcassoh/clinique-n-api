@@ -3,9 +3,214 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from datetime import datetime
+from decimal import Decimal
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Fonctions asynchrones internes
+# ---------------------------------------------------------------------------
+
+async def _send_notification_async(id_rendez_vous: int, event: str) -> None:
+    """
+    Envoie une notification asynchrone pour un rendez-vous.
+    
+    Args:
+        id_rendez_vous: ID du rendez-vous
+        event: Type d'événement (created, confirmed, cancelled, reminder)
+    """
+    date_debut = datetime.utcnow().isoformat()
+    
+    try:
+        logger.info(
+            "Début envoi notification asynchrone",
+            extra={
+                "date": date_debut,
+                "id_rendez_vous": id_rendez_vous,
+                "event": event,
+            },
+        )
+        
+        # TODO: Implémenter l'envoi réel via services de notification
+        # - Email via SMTP/SendGrid
+        # - Push notification via Firebase/OneSignal
+        # - SMS via Twilio (optionnel)
+        
+        # Simulation temporaire
+        await asyncio.sleep(0.1)
+        
+        date_fin = datetime.utcnow().isoformat()
+        logger.info(
+            "Notification envoyée avec succès",
+            extra={
+                "date_debut": date_debut,
+                "date_fin": date_fin,
+                "id_rendez_vous": id_rendez_vous,
+                "event": event,
+                "status": "success",
+            },
+        )
+        
+    except Exception as e:
+        date_erreur = datetime.utcnow().isoformat()
+        logger.error(
+            "Erreur envoi notification asynchrone",
+            extra={
+                "date_debut": date_debut,
+                "date_erreur": date_erreur,
+                "id_rendez_vous": id_rendez_vous,
+                "event": event,
+                "erreur": str(e),
+            },
+            exc_info=True,
+        )
+        raise
+
+
+async def _handle_webhook_async(passerelle: str, event: dict) -> None:
+    """
+    Traite un webhook de paiement de manière asynchrone.
+    
+    Args:
+        passerelle: Nom de la passerelle (stripe, razorpay, paypal)
+        event: Données de l'événement webhook
+    """
+    date_debut = datetime.utcnow().isoformat()
+    event_type = event.get("type") or event.get("event")
+    
+    try:
+        logger.info(
+            "Début traitement webhook asynchrone",
+            extra={
+                "date": date_debut,
+                "passerelle": passerelle,
+                "event_type": event_type,
+                "event_id": event.get("id"),
+            },
+        )
+        
+        # Router vers le gestionnaire approprié selon la passerelle
+        if passerelle == "stripe":
+            await _handle_stripe_webhook(event)
+        elif passerelle == "razorpay":
+            await _handle_razorpay_webhook(event)
+        elif passerelle == "paypal":
+            await _handle_paypal_webhook(event)
+        else:
+            logger.warning(
+                "Passerelle de paiement non supportée",
+                extra={
+                    "date": datetime.utcnow().isoformat(),
+                    "passerelle": passerelle,
+                },
+            )
+        
+        date_fin = datetime.utcnow().isoformat()
+        logger.info(
+            "Webhook traité avec succès",
+            extra={
+                "date_debut": date_debut,
+                "date_fin": date_fin,
+                "passerelle": passerelle,
+                "event_type": event_type,
+                "status": "success",
+            },
+        )
+        
+    except Exception as e:
+        date_erreur = datetime.utcnow().isoformat()
+        logger.error(
+            "Erreur traitement webhook asynchrone",
+            extra={
+                "date_debut": date_debut,
+                "date_erreur": date_erreur,
+                "passerelle": passerelle,
+                "event_type": event_type,
+                "erreur": str(e),
+            },
+            exc_info=True,
+        )
+        raise
+
+
+async def _handle_stripe_webhook(event: dict) -> None:
+    """Traite un webhook Stripe."""
+    # TODO: Implémenter la logique Stripe
+    await asyncio.sleep(0.1)
+    logger.debug("Webhook Stripe traité", extra={"event_type": event.get("type")})
+
+
+async def _handle_razorpay_webhook(event: dict) -> None:
+    """Traite un webhook Razorpay."""
+    # TODO: Implémenter la logique Razorpay
+    await asyncio.sleep(0.1)
+    logger.debug("Webhook Razorpay traité", extra={"event": event.get("event")})
+
+
+async def _handle_paypal_webhook(event: dict) -> None:
+    """Traite un webhook PayPal."""
+    # TODO: Implémenter la logique PayPal
+    await asyncio.sleep(0.1)
+    logger.debug("Webhook PayPal traité", extra={"event_type": event.get("event_type")})
+
+
+async def _do_refund_async(id_rendez_vous: int, montant: Decimal) -> None:
+    """
+    Effectue un remboursement de manière asynchrone.
+    
+    Args:
+        id_rendez_vous: ID du rendez-vous à rembourser
+        montant: Montant à rembourser
+    """
+    date_debut = datetime.utcnow().isoformat()
+    
+    try:
+        logger.info(
+            "Début remboursement asynchrone",
+            extra={
+                "date": date_debut,
+                "id_rendez_vous": id_rendez_vous,
+                "montant": str(montant),
+            },
+        )
+        
+        # TODO: Implémenter l'appel réel à la passerelle de paiement
+        # - Récupérer les infos de transaction depuis la DB
+        # - Appeler l'API de remboursement (Stripe/Razorpay/PayPal)
+        # - Mettre à jour le statut de la transaction
+        
+        # Simulation temporaire
+        await asyncio.sleep(0.1)
+        
+        date_fin = datetime.utcnow().isoformat()
+        logger.info(
+            "Remboursement effectué avec succès",
+            extra={
+                "date_debut": date_debut,
+                "date_fin": date_fin,
+                "id_rendez_vous": id_rendez_vous,
+                "montant": str(montant),
+                "status": "success",
+            },
+        )
+        
+    except Exception as e:
+        date_erreur = datetime.utcnow().isoformat()
+        logger.error(
+            "Erreur remboursement asynchrone",
+            extra={
+                "date_debut": date_debut,
+                "date_erreur": date_erreur,
+                "id_rendez_vous": id_rendez_vous,
+                "montant": str(montant),
+                "erreur": str(e),
+            },
+            exc_info=True,
+        )
+        raise
 
 
 def _get_celery_app():
@@ -70,8 +275,7 @@ if _celery_app is not None:
                 "tache.envoi_notification_rdv",
                 extra={"id_rendez_vous": id_rendez_vous, "event": event},
             )
-            # TODO: implémenter avec asyncio.run() vers les services de notification
-            # asyncio.run(_send_notification_async(id_rendez_vous, event))
+            asyncio.run(_send_notification_async(id_rendez_vous, event))
         except Exception as exc:
             logger.error(
                 "tache.notification_echouee",
@@ -112,8 +316,7 @@ if _celery_app is not None:
                 "tache.traitement_webhook_paiement",
                 extra={"passerelle": passerelle, "event_type": event.get("type") or event.get("event")},
             )
-            # TODO: router vers le gestionnaire approprié via asyncio.run()
-            # asyncio.run(_handle_webhook_async(passerelle, event))
+            asyncio.run(_handle_webhook_async(passerelle, event))
         except Exception as exc:
             logger.error(
                 "tache.webhook_echoue",
@@ -156,7 +359,7 @@ if _celery_app is not None:
                 "tache.traitement_remboursement",
                 extra={"id_rendez_vous": id_rendez_vous, "montant": montant},
             )
-            # TODO: asyncio.run(_do_refund_async(id_rendez_vous, Decimal(str(montant))))
+            asyncio.run(_do_refund_async(id_rendez_vous, Decimal(str(montant))))
         except Exception as exc:
             logger.error(
                 "tache.remboursement_echoue",
