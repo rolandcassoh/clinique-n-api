@@ -47,14 +47,19 @@ class SQLTagRepository(AbstractTagRepository):
         return _to_entity(modele)
 
     async def update(self, tag_id: int, nom: str, identifiant_url: str, type: str | None) -> Tag | None:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         requete = (
             update(TagModel)
             .where(TagModel.id == tag_id, TagModel.deleted_at.is_(None))
             .values(nom=nom, identifiant_url=identifiant_url, type=type)
-            .returning(TagModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(select(TagModel).where(TagModel.id == tag_id))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
 
     async def soft_delete(self, tag_id: int) -> bool:

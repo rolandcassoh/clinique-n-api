@@ -113,14 +113,21 @@ class SQLVitalSignsRepository(AbstractVitalSignsRepository):
         return _to_entity(m)
 
     async def update(self, vital_id: int, **kwargs) -> Optional[VitalSigns]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         stmt = (
             update(VitalSignsModel)
             .where(VitalSignsModel.id == vital_id, VitalSignsModel.deleted_at.is_(None))
             .values(**kwargs)
-            .returning(VitalSignsModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        m = (
+            await self._session.execute(
+                select(VitalSignsModel).where(VitalSignsModel.id == vital_id)
+            )
+        ).scalar_one_or_none()
         return _to_entity(m) if m else None
 
     async def soft_delete(self, vital_id: int) -> bool:

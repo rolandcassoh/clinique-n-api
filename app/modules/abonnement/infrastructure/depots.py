@@ -124,6 +124,8 @@ class SQLSubscriptionPlanRepository(AbstractSubscriptionPlanRepository):
         return _to_plan(m)
 
     async def update(self, id_plan: int, **kwargs) -> Optional[SubscriptionPlan]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         stmt = (
             update(SubscriptionPlanModel)
             .where(
@@ -131,10 +133,15 @@ class SQLSubscriptionPlanRepository(AbstractSubscriptionPlanRepository):
                 SubscriptionPlanModel.deleted_at.is_(None),
             )
             .values(**kwargs)
-            .returning(SubscriptionPlanModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        m = (
+            await self._session.execute(
+                select(SubscriptionPlanModel).where(SubscriptionPlanModel.id == id_plan)
+            )
+        ).scalar_one_or_none()
         if m is None:
             return None
         limitations = await self._load_limitations(id_plan)
@@ -233,6 +240,8 @@ class SQLSubscriptionRepository(AbstractSubscriptionRepository):
         return _to_subscription(m)
 
     async def update(self, subscription_id: int, **kwargs) -> Optional[Subscription]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         stmt = (
             update(SubscriptionModel)
             .where(
@@ -240,8 +249,13 @@ class SQLSubscriptionRepository(AbstractSubscriptionRepository):
                 SubscriptionModel.deleted_at.is_(None),
             )
             .values(**kwargs)
-            .returning(SubscriptionModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        m = (
+            await self._session.execute(
+                select(SubscriptionModel).where(SubscriptionModel.id == subscription_id)
+            )
+        ).scalar_one_or_none()
         return _to_subscription(m) if m else None

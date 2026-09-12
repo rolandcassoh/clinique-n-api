@@ -73,6 +73,8 @@ class SQLLanguageRepository(AbstractLanguageRepository):
         self, language_id: int, nom: str, code: str, nom_natif: str | None,
         drapeau: str | None, est_defaut: bool, est_actif: bool, sens_ecriture: Literal["ltr", "rtl"]
     ) -> Language | None:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         requete = (
             update(LanguageModel)
             .where(LanguageModel.id == language_id, LanguageModel.deleted_at.is_(None))
@@ -80,10 +82,13 @@ class SQLLanguageRepository(AbstractLanguageRepository):
                 nom=nom, code=code, nom_natif=nom_natif, drapeau=drapeau,
                 est_defaut=est_defaut, est_actif=est_actif, sens_ecriture=sens_ecriture,
             )
-            .returning(LanguageModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(select(LanguageModel).where(LanguageModel.id == language_id))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
 
     async def set_default(self, language_id: int) -> Language | None:
@@ -102,8 +107,9 @@ class SQLLanguageRepository(AbstractLanguageRepository):
             update(LanguageModel)
             .where(LanguageModel.id == language_id)
             .values(est_defaut=True)
-            .returning(LanguageModel)
         )
-        resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        await self._session.execute(requete)
+        modele = (
+            await self._session.execute(select(LanguageModel).where(LanguageModel.id == language_id))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None

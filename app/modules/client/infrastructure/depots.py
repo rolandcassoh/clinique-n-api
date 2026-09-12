@@ -166,6 +166,8 @@ class SQLFamilyMemberRepository(AbstractFamilyMemberRepository):
         groupe_sanguin: str | None,
         telephone: str | None,
     ) -> FamilyMember | None:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         requete = (
             update(OtherPatientModel)
             .where(
@@ -180,10 +182,15 @@ class SQLFamilyMemberRepository(AbstractFamilyMemberRepository):
                 groupe_sanguin=groupe_sanguin,
                 telephone=telephone,
             )
-            .returning(OtherPatientModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(
+                select(OtherPatientModel).where(OtherPatientModel.id == member_id)
+            )
+        ).scalar_one_or_none()
         return _member_to_entity(modele) if modele else None
 
     async def soft_delete(self, member_id: int) -> bool:

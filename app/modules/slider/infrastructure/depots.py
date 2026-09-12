@@ -54,6 +54,8 @@ class SQLSliderRepository(AbstractSliderRepository):
         self, slider_id: int, titre: str, sous_titre: str | None, image: str,
         lien: str | None, texte_bouton: str | None, position: int, est_actif: bool
     ) -> Slider | None:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         requete = (
             update(SliderModel)
             .where(SliderModel.id == slider_id, SliderModel.deleted_at.is_(None))
@@ -61,10 +63,13 @@ class SQLSliderRepository(AbstractSliderRepository):
                 titre=titre, sous_titre=sous_titre, image=image, lien=lien,
                 texte_bouton=texte_bouton, position=position, est_actif=est_actif,
             )
-            .returning(SliderModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(select(SliderModel).where(SliderModel.id == slider_id))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
 
     async def reorder(self, slider_id: int, position: int) -> Slider | None:
@@ -72,10 +77,13 @@ class SQLSliderRepository(AbstractSliderRepository):
             update(SliderModel)
             .where(SliderModel.id == slider_id, SliderModel.deleted_at.is_(None))
             .values(position=position)
-            .returning(SliderModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(select(SliderModel).where(SliderModel.id == slider_id))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
 
     async def soft_delete(self, slider_id: int) -> bool:

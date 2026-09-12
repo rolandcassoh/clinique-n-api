@@ -84,6 +84,8 @@ class SQLTaxRepository(AbstractTaxRepository):
         est_defaut: bool,
         est_actif: bool,
     ) -> Tax | None:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         requete = (
             update(TaxModel)
             .where(TaxModel.id == id_taxe, TaxModel.deleted_at.is_(None))
@@ -95,10 +97,13 @@ class SQLTaxRepository(AbstractTaxRepository):
                 est_defaut=est_defaut,
                 est_actif=est_actif,
             )
-            .returning(TaxModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(select(TaxModel).where(TaxModel.id == id_taxe))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
 
     async def set_default(self, id_taxe: int) -> Tax:
@@ -119,10 +124,11 @@ class SQLTaxRepository(AbstractTaxRepository):
             update(TaxModel)
             .where(TaxModel.id == id_taxe, TaxModel.deleted_at.is_(None))
             .values(est_defaut=True)
-            .returning(TaxModel)
         )
-        resultat = await self._session.execute(requete_set)
-        modele = resultat.scalar_one()
+        await self._session.execute(requete_set)
+        modele = (
+            await self._session.execute(select(TaxModel).where(TaxModel.id == id_taxe))
+        ).scalar_one()
         return _to_entity(modele)
 
     async def soft_delete(self, id_taxe: int) -> bool:

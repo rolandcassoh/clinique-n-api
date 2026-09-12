@@ -73,6 +73,8 @@ class SQLCurrencyRepository(AbstractCurrencyRepository):
         self, currency_id: int, nom: str, code: str, symbole: str,
         taux_change: Decimal, est_defaut: bool, est_actif: bool
     ) -> Currency | None:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         requete = (
             update(CurrencyModel)
             .where(CurrencyModel.id == currency_id, CurrencyModel.deleted_at.is_(None))
@@ -80,10 +82,13 @@ class SQLCurrencyRepository(AbstractCurrencyRepository):
                 nom=nom, code=code, symbole=symbole,
                 taux_change=taux_change, est_defaut=est_defaut, est_actif=est_actif,
             )
-            .returning(CurrencyModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(select(CurrencyModel).where(CurrencyModel.id == currency_id))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
 
     async def set_default(self, currency_id: int) -> Currency | None:
@@ -102,8 +107,9 @@ class SQLCurrencyRepository(AbstractCurrencyRepository):
             update(CurrencyModel)
             .where(CurrencyModel.id == currency_id)
             .values(est_defaut=True)
-            .returning(CurrencyModel)
         )
-        resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        await self._session.execute(requete)
+        modele = (
+            await self._session.execute(select(CurrencyModel).where(CurrencyModel.id == currency_id))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None

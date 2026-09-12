@@ -127,6 +127,8 @@ class SQLPromotionRepository(AbstractPromotionRepository):
         est_actif: bool,
         applicable_a: str,
     ) -> Promotion | None:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
         requete = (
             update(PromotionModel)
             .where(
@@ -146,10 +148,15 @@ class SQLPromotionRepository(AbstractPromotionRepository):
                 est_actif=est_actif,
                 applicable_a=applicable_a,
             )
-            .returning(PromotionModel)
         )
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(
+                select(PromotionModel).where(PromotionModel.id == id_promotion)
+            )
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
 
     async def soft_delete(self, id_promotion: int) -> bool:

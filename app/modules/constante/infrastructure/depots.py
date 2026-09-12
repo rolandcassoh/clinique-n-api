@@ -42,12 +42,13 @@ class SQLSettingRepository(AbstractSettingRepository):
         return [_to_entity(ligne) for ligne in resultat.scalars().all()]
 
     async def update_value(self, cle: str, valeur: str | None) -> Setting | None:
-        requete = (
-            update(SettingModel)
-            .where(SettingModel.cle == cle)
-            .values(valeur=valeur)
-            .returning(SettingModel)
-        )
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne.
+        requete = update(SettingModel).where(SettingModel.cle == cle).values(valeur=valeur)
         resultat = await self._session.execute(requete)
-        modele = resultat.scalar_one_or_none()
+        if resultat.rowcount == 0:
+            return None
+        modele = (
+            await self._session.execute(select(SettingModel).where(SettingModel.cle == cle))
+        ).scalar_one_or_none()
         return _to_entity(modele) if modele else None
