@@ -13,7 +13,7 @@ class UserNotFoundError(DomainException):
 
 class UserAlreadyExistsError(DomainException):
     def __init__(self, courriel: str) -> None:
-        super().__init__(f"Un utilisateur avec l'courriel '{courriel}' existe déjà.")
+        super().__init__(f"Un utilisateur avec le courriel '{courriel}' existe déjà.")
 
 
 class EmailNotVerifiedError(DomainException):
