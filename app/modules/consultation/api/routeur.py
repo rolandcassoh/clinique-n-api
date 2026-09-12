@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status as statut
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import get_current_user, require_role
@@ -73,6 +74,17 @@ def _chart_repo(db: DbDep) -> SQLAlchemyBodyChartRepository:
     return SQLAlchemyBodyChartRepository(db)
 
 
+async def _resolve_id_medecin(user: dict[str, Any], db: AsyncSession) -> int:
+    """Résout medecins.id à partir de l'utilisateur connecté (utilisateurs.id != medecins.id)."""
+    from sqlalchemy import select
+
+    from app.modules.clinic.infrastructure.modeles import DoctorModel
+
+    q = select(DoctorModel.id).where(DoctorModel.id_utilisateur == user["id"])
+    id_medecin = (await db.execute(q)).scalar_one_or_none()
+    return id_medecin if id_medecin is not None else user["id"]
+
+
 # ---------------------------------------------------------------------------
 # Médecin — Consultations
 # ---------------------------------------------------------------------------
@@ -85,15 +97,24 @@ def _chart_repo(db: DbDep) -> SQLAlchemyBodyChartRepository:
 async def create_encounter(
     payload: EncounterCreateRequest,
     current_user: DoctorDep,
+    db: DbDep,
     enc_repo: SQLAlchemyEncounterRepository = Depends(_enc_repo),
 ) -> EncounterSchema:
     uc = CreateEncounterUseCase(enc_repo)
-    enc = await uc.execute(
-        id_medecin=current_user["id"],
-        id_patient=payload.id_patient,
-        id_rendez_vous=payload.id_rendez_vous,
-        motif_principal=payload.motif_principal,
-    )
+    id_medecin = await _resolve_id_medecin(current_user, db)
+    try:
+        enc = await uc.execute(
+            id_medecin=id_medecin,
+            id_patient=payload.id_patient,
+            id_rendez_vous=payload.id_rendez_vous,
+            motif_principal=payload.motif_principal,
+        )
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(
+            status_code=statut.HTTP_409_CONFLICT,
+            detail="Une consultation existe déjà pour ce rendez-vous.",
+        ) from exc
     return EncounterSchema.model_validate(enc)
 
 
@@ -139,12 +160,14 @@ async def update_encounter(
 async def get_medical_report(
     id_consultation: int,
     current_user: DoctorDep,
+    db: DbDep,
     enc_repo: SQLAlchemyEncounterRepository = Depends(_enc_repo),
     report_repo: SQLAlchemyMedicalReportRepository = Depends(_report_repo),
 ) -> MedicalReportSchema:
     uc = GetMedicalReportUseCase(report_repo, enc_repo)
+    id_medecin = await _resolve_id_medecin(current_user, db)
     try:
-        report = await uc.execute(id_consultation, current_user["id"])
+        report = await uc.execute(id_consultation, id_medecin)
     except EncounterNotFoundError as exc:
         raise HTTPException(status_code=statut.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except UnauthorizedMedicalAccessError as exc:
@@ -163,14 +186,16 @@ async def upsert_medical_report(
     id_consultation: int,
     payload: MedicalReportCreateRequest,
     current_user: DoctorDep,
+    db: DbDep,
     enc_repo: SQLAlchemyEncounterRepository = Depends(_enc_repo),
     report_repo: SQLAlchemyMedicalReportRepository = Depends(_report_repo),
 ) -> MedicalReportSchema:
     uc = UpsertMedicalReportUseCase(report_repo, enc_repo)
+    id_medecin = await _resolve_id_medecin(current_user, db)
     try:
         report = await uc.execute(
             id_consultation=id_consultation,
-            requesting_doctor_id=current_user["id"],
+            requesting_doctor_id=id_medecin,
             **payload.model_dump(exclude_none=True),
         )
     except EncounterNotFoundError as exc:
@@ -207,14 +232,16 @@ async def create_prescription(
     id_consultation: int,
     payload: PrescriptionCreateRequest,
     current_user: DoctorDep,
+    db: DbDep,
     enc_repo: SQLAlchemyEncounterRepository = Depends(_enc_repo),
     presc_repo: SQLAlchemyPrescriptionRepository = Depends(_presc_repo),
 ) -> PrescriptionSchema:
     uc = CreatePrescriptionUseCase(presc_repo, enc_repo)
+    id_medecin = await _resolve_id_medecin(current_user, db)
     try:
         presc = await uc.execute(
             id_consultation=id_consultation,
-            requesting_doctor_id=current_user["id"],
+            requesting_doctor_id=id_medecin,
             nom_medicament=payload.nom_medicament,
             posologie=payload.posologie,
             frequence=payload.frequence,
@@ -245,6 +272,31 @@ async def delete_prescription(
         await uc.execute(prescription_id)
     except PrescriptionNotFoundError as exc:
         raise HTTPException(status_code=statut.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+# ---------------------------------------------------------------------------
+# Médecin — ses consultations
+# ---------------------------------------------------------------------------
+
+@router.get("/medecin/consultations", response_model=Page[EncounterSchema])
+async def list_my_doctor_encounters(
+    current_user: DoctorDep,
+    db: DbDep,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = 20,
+    enc_repo: SQLAlchemyEncounterRepository = Depends(_enc_repo),
+) -> Page[EncounterSchema]:
+    """Liste les consultations créées par le médecin connecté.
+
+    Aucun endpoint doctor-scoped n'existait auparavant (seul /mes-consultations,
+    réservé aux patients, et /admin/consultations, réservé aux admins). On réutilise
+    ici AdminListEncountersUseCase filtré par medecins.id résolu.
+    """
+    params = PaginationParams(page=page, per_page=per_page)
+    id_medecin = await _resolve_id_medecin(current_user, db)
+    uc = AdminListEncountersUseCase(enc_repo)
+    result = await uc.execute(params, None, id_medecin)
+    return result  # type: ignore[return-valeur]
 
 
 # ---------------------------------------------------------------------------

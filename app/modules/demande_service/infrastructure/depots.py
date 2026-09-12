@@ -59,7 +59,7 @@ class SQLAlchemyRequestServiceRepository(RequestServiceRepository):
             RequestServiceModel.deleted_at.is_(None),
         )
         if statut is not None:
-            requete_base = requete_base.where(RequestServiceModel.statut == statut.valeur)
+            requete_base = requete_base.where(RequestServiceModel.statut == statut.value)
         requete_compte = select(func.count()).select_from(requete_base.subquery())
         total: int = (await self._session.execute(requete_compte)).scalar_one()
         requete_lignes = requete_base.order_by(RequestServiceModel.id.desc()).offset(params.offset).limit(params.per_page)
@@ -102,7 +102,7 @@ class SQLAlchemyRequestServiceRepository(RequestServiceRepository):
             budget_max=budget_max,
             preferred_date=preferred_date,
             creneau_prefere=creneau_prefere,
-            statut=RequestServiceStatus.PENDING.valeur,
+            statut=RequestServiceStatus.PENDING.value,
         )
         self._session.add(modele)
         await self._session.flush()
@@ -120,7 +120,7 @@ class SQLAlchemyRequestServiceRepository(RequestServiceRepository):
         ligne = (await self._session.execute(requete)).scalar_one_or_none()
         if ligne is None:
             return None
-        ligne.statut = new_status.valeur
+        ligne.statut = new_status.value
         await self._session.flush()
         await self._session.refresh(ligne)
         return _to_entity(ligne)

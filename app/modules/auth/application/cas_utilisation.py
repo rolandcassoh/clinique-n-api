@@ -205,4 +205,40 @@ class ResetPasswordUseCase:
 
         hachage = hash_password(command.new_password)
         await self._repo.update_password(utilisateur.id, hachage)
+
+
+class UpdateProfileUseCase:
+    def __init__(self, user_repo: UserRepositoryPort) -> None:
+        self._repo = user_repo
+
+    async def execute(
+        self,
+        id_utilisateur: int,
+        nom: str | None = None,
+        telephone: str | None = None,
+    ) -> User:
+        utilisateur = await self._repo.get_by_id(id_utilisateur)
+        if utilisateur is None:
+            raise UserNotFoundError(id_utilisateur)
+
+        await self._repo.update_profile(id_utilisateur, nom=nom, telephone=telephone)
+        return await self._repo.get_by_id(id_utilisateur)  # type: ignore[return-value]
+
+
+class ChangePasswordUseCase:
+    def __init__(self, user_repo: UserRepositoryPort) -> None:
+        self._repo = user_repo
+
+    async def execute(
+        self, id_utilisateur: int, mot_de_passe_actuel: str, nouveau_mot_de_passe: str
+    ) -> None:
+        utilisateur = await self._repo.get_by_id(id_utilisateur)
+        if utilisateur is None:
+            raise UserNotFoundError(id_utilisateur)
+
+        if not verify_password(mot_de_passe_actuel, utilisateur.mot_de_passe):
+            raise InvalidCredentialsError()
+
+        hachage = hash_password(nouveau_mot_de_passe)
+        await self._repo.update_password(id_utilisateur, hachage)
         await self._repo.update_otp(utilisateur.id, None)

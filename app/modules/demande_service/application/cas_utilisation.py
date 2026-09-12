@@ -75,7 +75,7 @@ class CancelRequestServiceUseCase:
         if req.id_utilisateur != id_utilisateur:
             raise RequestServiceAccessDeniedError(request_id)
         if not req.can_cancel:
-            raise RequestServiceCannotCancelError(request_id, req.statut.valeur)
+            raise RequestServiceCannotCancelError(request_id, req.statut.value)
         await self._repo.soft_delete(request_id)
 
 

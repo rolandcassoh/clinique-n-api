@@ -145,6 +145,23 @@ class SQLAlchemyUserRepository(UserRepositoryPort):
             .values(mot_de_passe=password_hash)
         )
 
+    async def update_profile(
+        self,
+        id_utilisateur: int,
+        nom: str | None = None,
+        telephone: str | None = None,
+    ) -> None:
+        valeurs: dict[str, str] = {}
+        if nom is not None:
+            valeurs["nom"] = nom
+        if telephone is not None:
+            valeurs["telephone"] = telephone
+        if not valeurs:
+            return
+        await self._session.execute(
+            update(UserModel).where(UserModel.id == id_utilisateur).values(**valeurs)
+        )
+
     async def assign_role(self, id_utilisateur: int, role_name: str) -> None:
         requete_role = select(RoleModel).where(RoleModel.nom == role_name)
         resultat = await self._session.execute(requete_role)

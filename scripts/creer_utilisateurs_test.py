@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 """
 Script pour créer des utilisateurs de test dans la base de données.
+
+**OBSOLÈTE / NE FONCTIONNE PAS EN L'ÉTAT (constaté 2026-09-08)** : ce script
+importe `Utilisateur, Role` depuis `app.shared.models.base` en supposant des
+champs (`mot_de_passe_hash`, `prenom`, une colonne `role=` directe sur
+l'utilisateur) qui ne correspondent pas au schéma réel actuel. La table
+`utilisateurs` a `mot_de_passe` (pas `mot_de_passe_hash`), pas de `prenom`, et
+aucune colonne `role` directe : les rôles passent par la table pivot
+polymorphique `modele_a_roles` (voir app/modules/auth/infrastructure/modeles.py
+— RoleModel, ModelHasRoleModel, UserModel). Les 5 utilisateurs de test
+existent déjà en base (créés on ne sait comment/quand) ; pour leur assigner
+des rôles, utiliser scripts/assigner_roles_test.py à la place de la logique de
+rôle de ce script.
 """
 import asyncio
 import sys

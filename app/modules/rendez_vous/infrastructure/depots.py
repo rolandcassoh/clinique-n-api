@@ -92,11 +92,11 @@ class SQLAlchemyAppointmentRepository(AppointmentRepository):
                 id_patient=appointment.id_patient,
                 programme_le=appointment.programme_le,
                 duree_minutes=appointment.duree_minutes,
-                statut=appointment.statut.valeur,
-                type=appointment.type.valeur,
+                statut=appointment.statut.value,
+                type=appointment.type.value,
                 montant=appointment.montant,
                 montant_avance=appointment.montant_avance,
-                statut_paiement=appointment.statut_paiement.valeur,
+                statut_paiement=appointment.statut_paiement.value,
                 passerelle_paiement=appointment.passerelle_paiement,
                 reference_paiement=appointment.reference_paiement,
                 notes=appointment.notes,
@@ -116,9 +116,9 @@ class SQLAlchemyAppointmentRepository(AppointmentRepository):
             model = (await self._session.execute(q)).scalar_one_or_none()
             if model is None:
                 raise ValueError(f"Rendez-vous {appointment.id} introuvable pour la mise à jour")
-            model.statut = appointment.statut.valeur
-            model.type = appointment.type.valeur
-            model.statut_paiement = appointment.statut_paiement.valeur
+            model.statut = appointment.statut.value
+            model.type = appointment.type.value
+            model.statut_paiement = appointment.statut_paiement.value
             model.passerelle_paiement = appointment.passerelle_paiement
             model.reference_paiement = appointment.reference_paiement
             model.motif_annulation = appointment.motif_annulation

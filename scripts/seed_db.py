@@ -1,6 +1,19 @@
 """
 Données initiales pour l'environnement de développement.
 
+**OBSOLÈTE / NE FONCTIONNE PAS EN L'ÉTAT (constaté 2026-09-08)** : ce script cible
+un schéma anglicisé qui n'existe plus (table `users`, `INSERT INTO roles (name,
+guard_name, ...)`, etc.). Le schéma réel utilise `utilisateurs` (colonnes
+françaises : `courriel`, `mot_de_passe`, ...), `roles` avec les colonnes
+`nom`/`nom_garde`, et la table pivot polymorphique `modele_a_roles`
+(`id_role` / `type_modele` / `id_modele`, avec `type_modele =
+'App\\Models\\User'`) — voir les modèles ORM dans
+app/modules/auth/infrastructure/modeles.py (RoleModel, ModelHasRoleModel,
+UserModel). Pour créer/relier des rôles aux utilisateurs de test existants,
+utiliser scripts/assigner_roles_test.py à la place. Ce fichier est conservé
+tel quel pour référence mais nécessiterait une réécriture complète pour
+correspondre au schéma actuel avant de pouvoir être exécuté.
+
 Insère un jeu minimal de données nécessaires pour démarrer :
   - Utilisateurs (admin, médecin, patient)
   - Rôles

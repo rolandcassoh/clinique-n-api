@@ -50,6 +50,17 @@ def _rate_repo(db: DbDep) -> SQLAlchemyCommissionRateRepository:
     return SQLAlchemyCommissionRateRepository(db)
 
 
+async def _resolve_id_medecin(user: dict[str, Any], db: AsyncSession) -> int:
+    """Résout medecins.id à partir de l'utilisateur connecté (utilisateurs.id != medecins.id)."""
+    from sqlalchemy import select
+
+    from app.modules.clinic.infrastructure.modeles import DoctorModel
+
+    q = select(DoctorModel.id).where(DoctorModel.id_utilisateur == user["id"])
+    id_medecin = (await db.execute(q)).scalar_one_or_none()
+    return id_medecin if id_medecin is not None else user["id"]
+
+
 # ---------------------------------------------------------------------------
 # Médecin — ses revenus
 # ---------------------------------------------------------------------------
@@ -57,22 +68,26 @@ def _rate_repo(db: DbDep) -> SQLAlchemyCommissionRateRepository:
 @router.get("/medecin/revenus", response_model=Page[CommissionEarningSchema])
 async def get_doctor_earnings(
     current_user: DoctorDep,
+    db: DbDep,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = 20,
     earning_repo: SQLAlchemyCommissionEarningRepository = Depends(_earning_repo),
 ) -> Page[CommissionEarningSchema]:
     params = PaginationParams(page=page, per_page=per_page)
+    id_medecin = await _resolve_id_medecin(current_user, db)
     uc = GetDoctorEarningsUseCase(earning_repo)
-    return await uc.execute(current_user["id"], params)  # type: ignore[return-valeur]
+    return await uc.execute(id_medecin, params)  # type: ignore[return-valeur]
 
 
 @router.get("/medecin/revenus/resume", response_model=DoctorEarningsSummarySchema)
 async def get_doctor_earnings_summary(
     current_user: DoctorDep,
+    db: DbDep,
     earning_repo: SQLAlchemyCommissionEarningRepository = Depends(_earning_repo),
 ) -> DoctorEarningsSummarySchema:
+    id_medecin = await _resolve_id_medecin(current_user, db)
     uc = GetDoctorEarningsSummaryUseCase(earning_repo)
-    summary = await uc.execute(current_user["id"])
+    summary = await uc.execute(id_medecin)
     return DoctorEarningsSummarySchema(**summary)
 
 

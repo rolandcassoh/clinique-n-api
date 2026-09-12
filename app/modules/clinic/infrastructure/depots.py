@@ -156,6 +156,8 @@ class SQLClinicCategoryRepository(AbstractClinicCategoryRepository):
         return _to_category(m)
 
     async def update(self, id_categorie: int, **kwargs) -> Optional[ClinicCategory]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne, comme les autres dépôts de ce module.
         stmt = (
             update(ClinicCategoryModel)
             .where(
@@ -163,10 +165,12 @@ class SQLClinicCategoryRepository(AbstractClinicCategoryRepository):
                 ClinicCategoryModel.deleted_at.is_(None),
             )
             .values(**kwargs)
-            .returning(ClinicCategoryModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        requete = select(ClinicCategoryModel).where(ClinicCategoryModel.id == id_categorie)
+        m = (await self._session.execute(requete)).scalar_one_or_none()
         return _to_category(m) if m else None
 
     async def soft_delete(self, id_categorie: int) -> bool:
@@ -262,14 +266,18 @@ class SQLClinicRepository(AbstractClinicRepository):
         return _to_clinic(m)
 
     async def update(self, id_clinique: int, **kwargs) -> Optional[Clinic]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne, comme les autres dépôts de ce module.
         stmt = (
             update(ClinicModel)
             .where(ClinicModel.id == id_clinique, ClinicModel.deleted_at.is_(None))
             .values(**kwargs)
-            .returning(ClinicModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        requete = select(ClinicModel).where(ClinicModel.id == id_clinique)
+        m = (await self._session.execute(requete)).scalar_one_or_none()
         return _to_clinic(m) if m else None
 
     async def soft_delete(self, id_clinique: int) -> bool:
@@ -333,6 +341,8 @@ class SQLClinicServiceRepository(AbstractClinicServiceRepository):
         return _to_service(m)
 
     async def update(self, id_service: int, **kwargs) -> Optional[ClinicService]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne, comme les autres dépôts de ce module.
         stmt = (
             update(ClinicServiceModel)
             .where(
@@ -340,10 +350,12 @@ class SQLClinicServiceRepository(AbstractClinicServiceRepository):
                 ClinicServiceModel.deleted_at.is_(None),
             )
             .values(**kwargs)
-            .returning(ClinicServiceModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        requete = select(ClinicServiceModel).where(ClinicServiceModel.id == id_service)
+        m = (await self._session.execute(requete)).scalar_one_or_none()
         return _to_service(m) if m else None
 
     async def soft_delete(self, id_service: int) -> bool:
@@ -422,14 +434,18 @@ class SQLDoctorRepository(AbstractDoctorRepository):
         return _to_doctor(m)
 
     async def update(self, id_medecin: int, **kwargs) -> Optional[Doctor]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne, comme les autres dépôts de ce module (voir `create` ci-dessus).
         stmt = (
             update(DoctorModel)
             .where(DoctorModel.id == id_medecin, DoctorModel.deleted_at.is_(None))
             .values(**kwargs)
-            .returning(DoctorModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        requete = select(DoctorModel).where(DoctorModel.id == id_medecin)
+        m = (await self._session.execute(requete)).scalar_one_or_none()
         return _to_doctor(m) if m else None
 
     async def soft_delete(self, id_medecin: int) -> bool:
@@ -525,14 +541,18 @@ class SQLDoctorSessionRepository(AbstractDoctorSessionRepository):
         return _to_session(m)
 
     async def update(self, session_id: int, **kwargs) -> Optional[DoctorSession]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne, comme les autres dépôts de ce module.
         stmt = (
             update(DoctorSessionModel)
             .where(DoctorSessionModel.id == session_id)
             .values(**kwargs)
-            .returning(DoctorSessionModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        requete = select(DoctorSessionModel).where(DoctorSessionModel.id == session_id)
+        m = (await self._session.execute(requete)).scalar_one_or_none()
         return _to_session(m) if m else None
 
     async def delete(self, session_id: int) -> bool:
@@ -664,6 +684,8 @@ class SQLDoctorRatingRepository(AbstractDoctorRatingRepository):
         return _to_rating(m)
 
     async def approve(self, rating_id: int) -> Optional[DoctorRating]:
+        # MySQL ne supporte pas UPDATE ... RETURNING (syntaxe Postgres) : on met à jour
+        # puis on relit la ligne, comme les autres dépôts de ce module.
         stmt = (
             update(DoctorRatingModel)
             .where(
@@ -671,10 +693,12 @@ class SQLDoctorRatingRepository(AbstractDoctorRatingRepository):
                 DoctorRatingModel.deleted_at.is_(None),
             )
             .values(est_approuve=True)
-            .returning(DoctorRatingModel)
         )
         result = await self._session.execute(stmt)
-        m = result.scalar_one_or_none()
+        if result.rowcount == 0:
+            return None
+        requete = select(DoctorRatingModel).where(DoctorRatingModel.id == rating_id)
+        m = (await self._session.execute(requete)).scalar_one_or_none()
         return _to_rating(m) if m else None
 
     async def soft_delete(self, rating_id: int) -> bool:

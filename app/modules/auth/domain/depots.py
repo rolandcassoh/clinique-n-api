@@ -44,5 +44,14 @@ class UserRepositoryPort(ABC):
         pass
 
     @abstractmethod
+    async def update_profile(
+        self,
+        id_utilisateur: int,
+        nom: str | None = None,
+        telephone: str | None = None,
+    ) -> None:
+        pass
+
+    @abstractmethod
     async def assign_role(self, id_utilisateur: int, role_name: str) -> None:
         pass

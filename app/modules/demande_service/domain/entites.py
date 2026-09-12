@@ -41,10 +41,10 @@ class RequestService:
     def cancel(self) -> None:
         if not self.can_cancel:
             raise ValueError(
-                f"Impossible d'annuler une demande avec le statut '{self.statut.valeur}'. "
+                f"Impossible d'annuler une demande avec le statut '{self.statut.value}'. "
                 "Seules les demandes en statut 'pending' peuvent être annulées."
             )
         self.statut = RequestServiceStatus.CANCELLED
 
     def __str__(self) -> str:
-        return f"RequestService({self.id}: {self.titre[:50]} [{self.statut.valeur}])"
+        return f"RequestService({self.id}: {self.titre[:50]} [{self.statut.value}])"

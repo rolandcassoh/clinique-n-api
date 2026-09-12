@@ -1,14 +1,16 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status as statut
+from fastapi import APIRouter, Depends, HTTPException, Request, status as statut
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import get_current_user
 from app.core.auth.jwt_handler import JWTHandler
 from app.core.cache.redis_client import get_redis
+from app.core.security.rate_limit import limiter
 from app.database import get_db
 from app.modules.auth.api.schemas import (
     AccessTokenResponseSchema,
+    ChangePasswordSchema,
     ForgotPasswordSchema,
     LoginSchema,
     MessageResponse,
@@ -17,6 +19,7 @@ from app.modules.auth.api.schemas import (
     ResetPasswordSchema,
     TokenResponseSchema,
     TotpSetupResponse,
+    UpdateProfileSchema,
     UserResponse,
     VerifyOtpSchema,
     VerifyTotpSchema,
@@ -32,12 +35,14 @@ from app.modules.auth.application.commands import (
     VerifyTotpCommand,
 )
 from app.modules.auth.application.cas_utilisation import (
+    ChangePasswordUseCase,
     ForgotPasswordUseCase,
     LoginUseCase,
     RefreshTokenUseCase,
     RegisterUseCase,
     ResetPasswordUseCase,
     SetupTotpUseCase,
+    UpdateProfileUseCase,
     VerifyOtpUseCase,
     VerifyTotpUseCase,
 )
@@ -76,7 +81,9 @@ def _handle_domain_error(exc: Exception) -> HTTPException:
 
 
 @router.post("/inscription", response_model=UserResponse, status_code=statut.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def register(
+    request: Request,
     payload: RegisterSchema,
     db: AsyncSession = Depends(get_db),
 ) -> Any:
@@ -110,7 +117,9 @@ async def register(
 
 
 @router.post("/connexion", response_model=TokenResponseSchema)
+@limiter.limit("10/minute")
 async def login(
+    request: Request,
     payload: LoginSchema,
     db: AsyncSession = Depends(get_db),
 ) -> Any:
@@ -177,7 +186,9 @@ async def logout(
 
 
 @router.post("/mot-de-passe-oublie", response_model=MessageResponse)
+@limiter.limit("10/minute")
 async def forgot_password(
+    request: Request,
     payload: ForgotPasswordSchema,
     db: AsyncSession = Depends(get_db),
 ) -> Any:
@@ -188,7 +199,9 @@ async def forgot_password(
 
 
 @router.post("/reinitialiser-mot-de-passe", response_model=MessageResponse)
+@limiter.limit("10/minute")
 async def reset_password(
+    request: Request,
     payload: ResetPasswordSchema,
     db: AsyncSession = Depends(get_db),
 ) -> Any:
@@ -299,3 +312,54 @@ async def me(
         roles=utilisateur.roles,
         created_at=utilisateur.created_at,
     )
+
+
+@router.patch("/moi", response_model=UserResponse)
+async def update_me(
+    payload: UpdateProfileSchema,
+    current_user: dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Any:
+    repo = SQLAlchemyUserRepository(db)
+    use_case = UpdateProfileUseCase(repo)
+    try:
+        utilisateur = await use_case.execute(
+            id_utilisateur=current_user["id"],
+            nom=payload.nom,
+            telephone=payload.telephone,
+        )
+    except Exception as exc:
+        raise _handle_domain_error(exc) from exc
+
+    return UserResponse(
+        id=utilisateur.id,
+        nom=utilisateur.nom,
+        courriel=utilisateur.courriel,
+        nom_utilisateur=utilisateur.nom_utilisateur,
+        telephone=utilisateur.telephone,
+        est_actif=utilisateur.est_actif,
+        courriel_verifie_le=utilisateur.courriel_verifie_le,
+        totp_actif=utilisateur.totp_actif,
+        roles=utilisateur.roles,
+        created_at=utilisateur.created_at,
+    )
+
+
+@router.post("/mot-de-passe/changer", response_model=MessageResponse)
+async def change_password(
+    payload: ChangePasswordSchema,
+    current_user: dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Any:
+    repo = SQLAlchemyUserRepository(db)
+    use_case = ChangePasswordUseCase(repo)
+    try:
+        await use_case.execute(
+            id_utilisateur=current_user["id"],
+            mot_de_passe_actuel=payload.mot_de_passe_actuel,
+            nouveau_mot_de_passe=payload.nouveau_mot_de_passe,
+        )
+    except Exception as exc:
+        raise _handle_domain_error(exc) from exc
+
+    return MessageResponse(message="Mot de passe modifié avec succès.")

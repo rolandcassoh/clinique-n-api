@@ -156,7 +156,7 @@ class GenerateInvoicePDFUseCase:
             "patient_name": patient_name,
             "issued_date": record.created_at.strftime("%d/%m/%Y"),
             "date_echeance": record.date_echeance.strftime("%d/%m/%Y") if record.date_echeance else None,
-            "statut": record.statut.valeur,
+            "statut": record.statut.value,
             "items": items_data,
             "sous_total": float(record.sous_total),
             "montant_remise": float(record.montant_remise),
@@ -202,7 +202,7 @@ class AdminUpdateBillingStatusUseCase:
         }
         autorise = transitions_valides.get(record.statut, [])
         if new_status not in autorise:
-            raise InvalidStatusTransitionError(record.statut.valeur, new_status)
+            raise InvalidStatusTransitionError(record.statut.value, new_status)
 
         paye_le = datetime.utcnow() if new_status == "paid" else None
         mis_a_jour = await self._repo.update_status(id_facture, new_status, paye_le)

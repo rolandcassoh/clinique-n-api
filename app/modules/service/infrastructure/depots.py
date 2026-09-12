@@ -309,7 +309,20 @@ class SQLAlchemyServiceRepository(ServiceRepository):
         self._session.add(m)
         await self._session.flush()
         await self._session.refresh(m)
-        return _svc_to_entity(m)
+        # Un service tout juste créé n'a encore ni catégorie chargée ni relations
+        # (galeries/forfaits/employés) : les reconstruire ici évite un lazy-load
+        # hors contexte async (MissingGreenlet) qu'un refresh() seul ne déclenche pas.
+        return Service(
+            id=m.id, id_prestataire=m.id_prestataire, id_categorie=m.id_categorie,
+            nom=m.nom, identifiant_url=m.identifiant_url, description=m.description,
+            short_description=m.short_description, prix=m.prix,
+            prix_remise=m.prix_remise, duree_minutes=m.duree_minutes,
+            est_actif=m.est_actif, est_mis_en_avant=m.est_mis_en_avant,
+            service_domicile=m.service_domicile, max_membres=m.max_membres,
+            created_at=m.created_at, updated_at=m.updated_at,
+            category=None, galleries=[], packages=[], employees=[],
+            note_moyenne=None, review_count=0,
+        )
 
     async def update(
         self, id_service: int, id_prestataire: int | None, id_categorie: int | None,

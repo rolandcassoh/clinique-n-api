@@ -134,7 +134,7 @@ async def get_billing_pdf(
         filename = f"facture-{id_facture}.html"
 
     return Response(
-        contenu=pdf_bytes,
+        content=pdf_bytes,
         media_type=content_type,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

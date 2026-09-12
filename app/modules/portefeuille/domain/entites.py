@@ -40,7 +40,7 @@ class PatientWallet:
             raise ValueError("Le montant du crédit doit être positif")
         self.solde += montant
         return WalletTransaction(
-            type=TransactionType.CREDIT.valeur,
+            type=TransactionType.CREDIT.value,
             montant=montant,
             solde_apres=self.solde,
             description=description,
@@ -54,7 +54,7 @@ class PatientWallet:
             raise InsufficientFundsError(self.solde, montant)
         self.solde -= montant
         return WalletTransaction(
-            type=TransactionType.DEBIT.valeur,
+            type=TransactionType.DEBIT.value,
             montant=montant,
             solde_apres=self.solde,
             description=description,

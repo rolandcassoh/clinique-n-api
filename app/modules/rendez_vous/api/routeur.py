@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status as statut
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import get_current_user, require_role
@@ -15,6 +16,7 @@ from app.modules.rendez_vous.api.schemas import (
     BookAppointmentRequest,
     CancelRequest,
     CancellationResponse,
+    DoctorPatientSummary,
     ForceStatusRequest,
     PayAppointmentRequest,
     PaymentStatusResponse,
@@ -74,6 +76,26 @@ def _make_tx_repo(db: AsyncSession) -> SQLAlchemyAppointmentTransactionRepositor
     return SQLAlchemyAppointmentTransactionRepository(db)
 
 
+async def _resolve_id_medecin(user: dict, db: AsyncSession) -> int:
+    """Résout medecins.id à partir de l'utilisateur connecté.
+
+    Les endpoints "médecin" de ce routeur confondaient auparavant
+    utilisateurs.id (l'identifiant du compte connecté) avec medecins.id
+    (la ligne de profil médecin liée à ce compte) — deux espaces d'id
+    distincts. Un admin appelant ces routes n'a pas de profil médecin :
+    on retombe alors sur user["id"] pour ne pas casser son accès.
+    """
+    from sqlalchemy import select
+
+    from app.modules.clinic.infrastructure.modeles import DoctorModel
+
+    q = select(DoctorModel.id).where(DoctorModel.id_utilisateur == user["id"])
+    id_medecin = (await db.execute(q)).scalar_one_or_none()
+    if id_medecin is None:
+        return user["id"]
+    return id_medecin
+
+
 # ---------------------------------------------------------------------------
 # Patient endpoints
 # ---------------------------------------------------------------------------
@@ -111,6 +133,12 @@ async def book_appointment(
         appointment = await use_case.execute(cmd)
     except SlotNotAvailableError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Conflit lors de la création du rendez-vous (référence en double). Veuillez réessayer.",
+        ) from exc
     return AppointmentResponse(**appointment.__dict__)
 
 
@@ -216,15 +244,107 @@ async def list_doctor_appointments(
     db: AsyncSession = Depends(get_db),
 ) -> Page[AppointmentResponse]:
     repo = _make_apt_repo(db)
+    id_medecin = await _resolve_id_medecin(user, db)
     params = PaginationParams(page=page, per_page=per_page)
     appointments, total = await repo.list_for_doctor(
-        id_medecin=user["id"],
+        id_medecin=id_medecin,
         params=params,
         date_from=date_from,
         date_to=date_to,
         statut=status_filter,
     )
     data = [AppointmentResponse(**apt.__dict__) for apt in appointments]
+    return Page.create(data=data, total=total, params=params)
+
+
+@router.get(
+    "/medecin/patients",
+    response_model=Page[DoctorPatientSummary],
+    tags=["Rendez-vous Medecin"],
+)
+async def list_doctor_patients(
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=20, ge=1, le=100),
+    user: dict = Depends(require_role("doctor", "admin")),
+    db: AsyncSession = Depends(get_db),
+) -> Page[DoctorPatientSummary]:
+    """Patients distincts ayant eu (ou ayant) un rendez-vous avec le médecin connecté.
+
+    Aucun module « patient » propre au médecin n'existe côté API : cette liste est
+    dérivée des rendez-vous du médecin (id_patient), croisés avec les comptes
+    utilisateurs pour le nom/courriel/téléphone.
+    """
+    from sqlalchemy import func, select
+
+    from app.modules.auth.infrastructure.modeles import UserModel
+    from app.modules.rendez_vous.infrastructure.modeles import AppointmentModel
+
+    id_medecin = await _resolve_id_medecin(user, db)
+
+    sous_requete = (
+        select(
+            AppointmentModel.id_patient.label("id_patient"),
+            func.count(AppointmentModel.id).label("nombre_rdv"),
+            func.max(AppointmentModel.programme_le).label("dernier_rdv"),
+        )
+        .where(
+            AppointmentModel.id_medecin == id_medecin,
+            AppointmentModel.deleted_at.is_(None),
+        )
+        .group_by(AppointmentModel.id_patient)
+        .subquery()
+    )
+
+    total: int = (
+        await db.execute(select(func.count()).select_from(sous_requete))
+    ).scalar_one()
+
+    params = PaginationParams(page=page, per_page=per_page)
+    requete = (
+        select(
+            sous_requete.c.id_patient,
+            sous_requete.c.nombre_rdv,
+            sous_requete.c.dernier_rdv,
+            UserModel.nom,
+            UserModel.courriel,
+            UserModel.telephone,
+        )
+        .join(UserModel, UserModel.id == sous_requete.c.id_patient)
+        .order_by(sous_requete.c.dernier_rdv.desc())
+        .offset(params.offset)
+        .limit(params.per_page)
+    )
+    lignes = (await db.execute(requete)).all()
+
+    # Dernier statut de rendez-vous par patient (requête simple par ligne — page courte)
+    id_patients = [ligne.id_patient for ligne in lignes]
+    derniers_statuts: dict[int, str] = {}
+    if id_patients:
+        for id_patient in id_patients:
+            statut_req = (
+                select(AppointmentModel.statut)
+                .where(
+                    AppointmentModel.id_medecin == id_medecin,
+                    AppointmentModel.id_patient == id_patient,
+                    AppointmentModel.deleted_at.is_(None),
+                )
+                .order_by(AppointmentModel.programme_le.desc())
+                .limit(1)
+            )
+            derniers_statuts[id_patient] = (await db.execute(statut_req)).scalar_one()
+
+    data = [
+        DoctorPatientSummary(
+            id_patient=ligne.id_patient,
+            nom=ligne.nom,
+            courriel=ligne.courriel,
+            telephone=ligne.telephone,
+            nombre_rdv=ligne.nombre_rdv,
+            dernier_rdv=ligne.dernier_rdv,
+            dernier_statut=derniers_statuts[ligne.id_patient],
+        )
+        for ligne in lignes
+    ]
     return Page.create(data=data, total=total, params=params)
 
 
@@ -240,8 +360,9 @@ async def confirm_appointment(
 ) -> AppointmentResponse:
     repo = _make_apt_repo(db)
     use_case = ConfirmAppointmentUseCase(repo=repo)
+    id_medecin = await _resolve_id_medecin(user, db)
     try:
-        appointment = await use_case.execute(id_rendez_vous=id_rendez_vous, id_medecin=user["id"])
+        appointment = await use_case.execute(id_rendez_vous=id_rendez_vous, id_medecin=id_medecin)
     except AppointmentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except AppointmentPermissionError as exc:
@@ -263,8 +384,9 @@ async def complete_appointment(
 ) -> AppointmentResponse:
     repo = _make_apt_repo(db)
     use_case = CompleteAppointmentUseCase(repo=repo)
+    id_medecin = await _resolve_id_medecin(user, db)
     try:
-        appointment = await use_case.execute(id_rendez_vous=id_rendez_vous, id_medecin=user["id"])
+        appointment = await use_case.execute(id_rendez_vous=id_rendez_vous, id_medecin=id_medecin)
     except AppointmentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except AppointmentPermissionError as exc:
@@ -286,8 +408,9 @@ async def mark_no_show(
 ) -> AppointmentResponse:
     repo = _make_apt_repo(db)
     use_case = MarkNoShowUseCase(repo=repo)
+    id_medecin = await _resolve_id_medecin(user, db)
     try:
-        appointment = await use_case.execute(id_rendez_vous=id_rendez_vous, id_medecin=user["id"])
+        appointment = await use_case.execute(id_rendez_vous=id_rendez_vous, id_medecin=id_medecin)
     except AppointmentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except AppointmentPermissionError as exc:
@@ -485,7 +608,7 @@ async def admin_force_status(
     use_case = ForceStatusUseCase(repo=repo)
     try:
         appointment = await use_case.execute(
-            id_rendez_vous=id_rendez_vous, new_status=body.statut.valeur
+            id_rendez_vous=id_rendez_vous, new_status=body.statut.value
         )
     except AppointmentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))

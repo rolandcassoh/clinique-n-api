@@ -4,6 +4,7 @@ from decimal import Decimal
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status as statut
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth.dependencies import get_current_user, require_role
@@ -208,6 +209,55 @@ async def list_doctors(
     )
 
 
+async def _resolve_id_medecin(user: dict[str, Any], db: AsyncSession) -> int:
+    """Résout medecins.id à partir de l'utilisateur connecté (utilisateurs.id != medecins.id)."""
+    from sqlalchemy import select
+
+    from app.modules.clinic.infrastructure.modeles import DoctorModel
+
+    q = select(DoctorModel.id).where(DoctorModel.id_utilisateur == user["id"])
+    id_medecin = (await db.execute(q)).scalar_one_or_none()
+    if id_medecin is None:
+        raise HTTPException(
+            status_code=statut.HTTP_404_NOT_FOUND,
+            detail="Aucun profil médecin associé à ce compte.",
+        )
+    return id_medecin
+
+
+@router.get("/medecins/moi", response_model=DoctorSchema)
+async def get_my_doctor_profile(
+    current_user: dict[str, Any] = Depends(require_role("doctor")),
+    db: AsyncSession = Depends(get_db),
+    repo: SQLDoctorRepository = Depends(_doctor_repo),
+) -> DoctorSchema:
+    id_medecin = await _resolve_id_medecin(current_user, db)
+    try:
+        doctor = await GetDoctorUseCase(repo).execute(id_medecin)
+    except DoctorNotFoundError as exc:
+        raise HTTPException(status_code=statut.HTTP_404_NOT_FOUND, detail=exc.message)
+    return DoctorSchema.model_validate(doctor.__dict__)
+
+
+@router.put("/medecins/moi", response_model=DoctorSchema)
+async def update_my_doctor_profile(
+    body: DoctorUpdateSchema,
+    current_user: dict[str, Any] = Depends(require_role("doctor")),
+    db: AsyncSession = Depends(get_db),
+    repo: SQLDoctorRepository = Depends(_doctor_repo),
+) -> DoctorSchema:
+    """Le médecin ne peut modifier que les champs de sa propre fiche (pas d'admin requis)."""
+    id_medecin = await _resolve_id_medecin(current_user, db)
+    try:
+        doctor = await UpdateDoctorUseCase(repo).execute(
+            id_medecin,
+            **{k: v for k, v in body.model_dump(exclude_none=True).items()},
+        )
+    except DoctorNotFoundError as exc:
+        raise HTTPException(status_code=statut.HTTP_404_NOT_FOUND, detail=exc.message)
+    return DoctorSchema.model_validate(doctor.__dict__)
+
+
 @router.get("/medecins/{id_medecin}", response_model=DoctorSchema)
 async def get_doctor(
     id_medecin: int,
@@ -375,9 +425,16 @@ async def admin_create_category(
     body: ClinicCategoryCreateSchema,
     repo: SQLClinicCategoryRepository = Depends(_category_repo),
 ) -> ClinicCategorySchema:
-    cat = await CreateCategoryUseCase(repo).execute(
-        nom=body.nom, identifiant_url=body.identifiant_url, image=body.image, description=body.description,
-    )
+    try:
+        cat = await CreateCategoryUseCase(repo).execute(
+            nom=body.nom, identifiant_url=body.identifiant_url, image=body.image, description=body.description,
+        )
+    except IntegrityError as exc:
+        await repo._session.rollback()
+        raise HTTPException(
+            status_code=statut.HTTP_409_CONFLICT,
+            detail="Une catégorie avec cet identifiant URL existe déjà.",
+        ) from exc
     return ClinicCategorySchema.model_validate(cat.__dict__)
 
 
@@ -398,6 +455,12 @@ async def admin_update_category(
         )
     except ClinicCategoryNotFoundError as exc:
         raise HTTPException(status_code=statut.HTTP_404_NOT_FOUND, detail=exc.message)
+    except IntegrityError as exc:
+        await repo._session.rollback()
+        raise HTTPException(
+            status_code=statut.HTTP_409_CONFLICT,
+            detail="Une catégorie avec cet identifiant URL existe déjà.",
+        ) from exc
     return ClinicCategorySchema.model_validate(cat.__dict__)
 
 
@@ -501,13 +564,20 @@ async def admin_create_doctor(
     body: DoctorCreateSchema,
     repo: SQLDoctorRepository = Depends(_doctor_repo),
 ) -> DoctorSchema:
-    doctor = await CreateDoctorUseCase(repo).execute(
-        id_utilisateur=body.id_utilisateur, id_clinique=id_clinique,
-        specialite=body.specialite, qualification=body.qualification,
-        annees_experience=body.annees_experience,
-        honoraires_consultation=body.honoraires_consultation,
-        montant_avance=body.montant_avance,
-    )
+    try:
+        doctor = await CreateDoctorUseCase(repo).execute(
+            id_utilisateur=body.id_utilisateur, id_clinique=id_clinique,
+            specialite=body.specialite, qualification=body.qualification,
+            annees_experience=body.annees_experience,
+            honoraires_consultation=body.honoraires_consultation,
+            montant_avance=body.montant_avance,
+        )
+    except IntegrityError as exc:
+        await repo._session.rollback()
+        raise HTTPException(
+            status_code=statut.HTTP_409_CONFLICT,
+            detail="Cet utilisateur possède déjà un profil médecin.",
+        ) from exc
     return DoctorSchema.model_validate(doctor.__dict__)
 
 
@@ -703,9 +773,16 @@ async def admin_create_receptionist(
     body: ReceptionistCreateSchema,
     repo: SQLReceptionistRepository = Depends(_receptionist_repo),
 ) -> ReceptionistSchema:
-    rec = await CreateReceptionistUseCase(repo).execute(
-        id_utilisateur=body.id_utilisateur, id_clinique=id_clinique,
-    )
+    try:
+        rec = await CreateReceptionistUseCase(repo).execute(
+            id_utilisateur=body.id_utilisateur, id_clinique=id_clinique,
+        )
+    except IntegrityError as exc:
+        await repo._session.rollback()
+        raise HTTPException(
+            status_code=statut.HTTP_409_CONFLICT,
+            detail="Cet utilisateur possède déjà un profil réceptionniste.",
+        ) from exc
     return ReceptionistSchema.model_validate(rec.__dict__)
 
 

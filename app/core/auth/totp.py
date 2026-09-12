@@ -10,7 +10,7 @@ def generate_totp_secret() -> str:
 
 
 def get_totp_uri(secret: str, courriel: str, issuer: str = "Gestion Clinique") -> str:
-    return pyotp.totp.TOTP(secret).provisioning_uri(nom=courriel, issuer_name=issuer)
+    return pyotp.totp.TOTP(secret).provisioning_uri(name=courriel, issuer_name=issuer)
 
 
 def verify_totp_token(secret: str, jeton: str) -> bool:

@@ -30,6 +30,16 @@ class ResetPasswordSchema(BaseModel):
     id_utilisateur: int
 
 
+class UpdateProfileSchema(BaseModel):
+    nom: str | None = Field(default=None, min_length=2, max_length=255)
+    telephone: str | None = Field(default=None, max_length=30)
+
+
+class ChangePasswordSchema(BaseModel):
+    mot_de_passe_actuel: str = Field(..., min_length=1)
+    nouveau_mot_de_passe: str = Field(..., min_length=8, max_length=128)
+
+
 class VerifyOtpSchema(BaseModel):
     id_utilisateur: int
     code_otp: str = Field(..., min_length=4, max_length=20)

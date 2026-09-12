@@ -83,6 +83,18 @@ class AppointmentResponse(BaseModel):
     updated_at: datetime
 
 
+class DoctorPatientSummary(BaseModel):
+    """Résumé d'un patient vu par un médecin — dérivé de ses rendez-vous."""
+
+    id_patient: int
+    nom: str
+    courriel: str
+    telephone: Optional[str] = None
+    nombre_rdv: int
+    dernier_rdv: datetime
+    dernier_statut: AppointmentStatus
+
+
 class CancellationResponse(BaseModel):
     message: str
     is_full_refund: bool

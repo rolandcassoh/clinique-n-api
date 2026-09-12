@@ -6,11 +6,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import settings
 from app.core.cache.redis_client import close_redis
 from app.core.middleware.logging import StructuredLoggingMiddleware
 from app.core.middleware.security import SecurityHeadersMiddleware
+from app.core.security.rate_limit import limiter
 from app.modules.auth.api.routeur import router as auth_router
 from app.modules.monde.api.routeur import router as world_router
 from app.modules.faq.api.routeur import router as faq_router
@@ -85,6 +88,18 @@ app.add_middleware(
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(StructuredLoggingMiddleware)
 
+# --- Limitation de débit (protection brute-force sur l'authentification) ---
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse:
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Trop de requêtes. Veuillez réessayer plus tard."},
+    )
+
 # --- Métriques Prometheus ---
 Instrumentator().instrument(app).expose(app, endpoint="/metriques")
 
@@ -129,7 +144,7 @@ app.include_router(commission_router, prefix="/api", tags=["Commissions"])
 # --- Gestionnaire global des erreurs de domaine ---
 @app.exception_handler(DomainException)
 async def domain_exception_handler(request: Request, exc: DomainException) -> JSONResponse:
-    return JSONResponse(status_code=400, contenu={"detail": exc.message})
+    return JSONResponse(status_code=400, content={"detail": exc.message})
 
 
 @app.get("/sante", tags=["Système"])
