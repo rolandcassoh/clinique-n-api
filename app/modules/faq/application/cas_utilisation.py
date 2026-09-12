@@ -16,6 +16,17 @@ class ListActiveFAQsUseCase:
         return Page.create(data=elements, total=total, params=params)
 
 
+class ListAllFAQsUseCase:
+    """Liste toutes les FAQs (actives et inactives) — usage admin."""
+
+    def __init__(self, repo: FAQRepository) -> None:
+        self._repo = repo
+
+    async def execute(self, params: PaginationParams) -> Page[FAQ]:
+        elements, total = await self._repo.list_all(params)
+        return Page.create(data=elements, total=total, params=params)
+
+
 class GetFAQUseCase:
     def __init__(self, repo: FAQRepository) -> None:
         self._repo = repo

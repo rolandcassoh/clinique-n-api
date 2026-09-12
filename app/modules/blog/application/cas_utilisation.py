@@ -27,6 +27,17 @@ class ListPublishedPostsUseCase:
         return Page.create(data=articles, total=total, params=params)
 
 
+class ListAllPostsUseCase:
+    """Liste tous les articles (publiés et brouillons) — usage admin."""
+
+    def __init__(self, repo: BlogPostRepository) -> None:
+        self._repo = repo
+
+    async def execute(self, params: PaginationParams) -> Page[BlogPost]:
+        articles, total = await self._repo.list_all(params)
+        return Page.create(data=articles, total=total, params=params)
+
+
 class GetBlogPostBySlugUseCase:
     def __init__(self, repo: BlogPostRepository) -> None:
         self._repo = repo

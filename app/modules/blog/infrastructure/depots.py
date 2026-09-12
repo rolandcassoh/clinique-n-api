@@ -131,6 +131,26 @@ class SQLAlchemyBlogPostRepository(BlogPostRepository):
         nom_auteur = await self._fetch_author_name(ligne.id_auteur)
         return _post_to_entity(ligne, nom_auteur)
 
+    async def list_all(self, params: PaginationParams) -> tuple[list[BlogPost], int]:
+        base_q = select(BlogPostModel).where(BlogPostModel.deleted_at.is_(None))
+
+        requete_compte = select(func.count()).select_from(base_q.subquery())
+        total: int = (await self._session.execute(requete_compte)).scalar_one()
+
+        requete_lignes = (
+            base_q.order_by(BlogPostModel.id.desc())
+            .offset(params.offset)
+            .limit(params.per_page)
+        )
+        lignes = (await self._session.execute(requete_lignes)).scalars().all()
+
+        articles: list[BlogPost] = []
+        for ligne in lignes:
+            nom_auteur = await self._fetch_author_name(ligne.id_auteur)
+            articles.append(_post_to_entity(ligne, nom_auteur))
+
+        return articles, total
+
     async def increment_views(self, post_id: int) -> None:
         stmt = (
             update(BlogPostModel)

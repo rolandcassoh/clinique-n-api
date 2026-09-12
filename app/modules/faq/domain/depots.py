@@ -13,6 +13,10 @@ class FAQRepository(ABC):
         """Retourne (FAQs actives, total) — filtre optionnel par catégorie."""
 
     @abstractmethod
+    async def list_all(self, params: PaginationParams) -> tuple[list[FAQ], int]:
+        """Retourne (toutes les FAQs non supprimées, total) — actives ET inactives (admin)."""
+
+    @abstractmethod
     async def get_by_id(self, faq_id: int) -> FAQ | None:
         """Retourne une FAQ (active ou non) par id, ou None."""
 

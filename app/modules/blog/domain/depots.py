@@ -26,6 +26,10 @@ class BlogPostRepository(ABC):
         """Retourne (posts publiés, total) avec filtres optionnels."""
 
     @abstractmethod
+    async def list_all(self, params: PaginationParams) -> tuple[list[BlogPost], int]:
+        """Retourne (tous les posts non supprimés, total) — publiés ET brouillons (admin)."""
+
+    @abstractmethod
     async def get_by_slug(self, identifiant_url: str) -> BlogPost | None:
         """Retourne un post par identifiant_url ou None."""
 

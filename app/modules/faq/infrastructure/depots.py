@@ -48,6 +48,20 @@ class SQLAlchemyFAQRepository(FAQRepository):
         lignes = (await self._session.execute(requete_lignes)).scalars().all()
         return [_to_entity(r) for r in lignes], total
 
+    async def list_all(self, params: PaginationParams) -> tuple[list[FAQ], int]:
+        requete_base = select(FAQModel).where(FAQModel.deleted_at.is_(None))
+
+        requete_compte = select(func.count()).select_from(requete_base.subquery())
+        total: int = (await self._session.execute(requete_compte)).scalar_one()
+
+        requete_lignes = (
+            requete_base.order_by(FAQModel.ordre_affichage, FAQModel.id)
+            .offset(params.offset)
+            .limit(params.per_page)
+        )
+        lignes = (await self._session.execute(requete_lignes)).scalars().all()
+        return [_to_entity(r) for r in lignes], total
+
     async def get_by_id(self, faq_id: int) -> FAQ | None:
         requete = select(FAQModel).where(
             FAQModel.id == faq_id,

@@ -12,6 +12,7 @@ from app.modules.faq.application.cas_utilisation import (
     DeleteFAQUseCase,
     GetFAQUseCase,
     ListActiveFAQsUseCase,
+    ListAllFAQsUseCase,
     UpdateFAQUseCase,
 )
 from app.modules.faq.domain.exceptions import FAQNotFoundError
@@ -65,6 +66,23 @@ async def get_faq(
 # ---------------------------------------------------------------------------
 # Endpoints admin (protégés)
 # ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/admin/faq",
+    response_model=Page[FAQSchema],
+    dependencies=[Depends(require_role("admin", "super-admin"))],
+)
+async def list_all_faqs(
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = 20,
+    repo: SQLAlchemyFAQRepository = Depends(_repo),
+) -> Page[FAQSchema]:
+    """Liste paginée de toutes les FAQs (actives et inactives) — admin."""
+    params = PaginationParams(page=page, per_page=per_page)
+    uc = ListAllFAQsUseCase(repo)
+    resultat = await uc.execute(params)
+    return resultat  # type: ignore[return-valeur]
 
 
 @router.post(

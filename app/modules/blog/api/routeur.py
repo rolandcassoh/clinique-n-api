@@ -17,6 +17,7 @@ from app.modules.blog.application.cas_utilisation import (
     CreateBlogPostUseCase,
     DeleteBlogPostUseCase,
     GetBlogPostBySlugUseCase,
+    ListAllPostsUseCase,
     ListBlogCategoriesUseCase,
     ListPublishedPostsUseCase,
     UpdateBlogPostUseCase,
@@ -93,6 +94,23 @@ async def get_blog_post(
 # ---------------------------------------------------------------------------
 # Endpoints admin
 # ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/admin/blog/posts",
+    response_model=Page[BlogPostSchema],
+    dependencies=[Depends(require_role("admin", "super-admin"))],
+)
+async def list_all_blog_posts(
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = 20,
+    repo: SQLAlchemyBlogPostRepository = Depends(_post_repo),
+) -> Page[BlogPostSchema]:
+    """Liste paginée de tous les articles (publiés et brouillons) — admin."""
+    params = PaginationParams(page=page, per_page=per_page)
+    uc = ListAllPostsUseCase(repo)
+    resultat = await uc.execute(params)
+    return resultat  # type: ignore[return-valeur]
 
 
 @router.post(
