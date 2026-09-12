@@ -27,6 +27,7 @@ class BlogPostSchema(BaseModel):
     author_name: str | None
     category_name: str | None
     miniature: str | None
+    est_publie: bool
     publie_le: datetime | None
     vues: int
     created_at: datetime
@@ -46,6 +47,7 @@ class BlogPostDetailSchema(BaseModel):
     author_name: str | None
     category_name: str | None
     miniature: str | None
+    est_publie: bool
     publie_le: datetime | None
     vues: int
     created_at: datetime
