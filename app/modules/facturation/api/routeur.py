@@ -76,16 +76,29 @@ async def create_appointment_billing(
     id_rendez_vous: int,
     payload: CreateInvoiceRequest,
     current_user: DoctorAdminDep,
+    db: DbDep,
     billing_repo: SQLAlchemyBillingRepository = Depends(_billing_repo),
 ) -> BillingRecordSchema:
+    from sqlalchemy import select
+
+    from app.modules.rendez_vous.infrastructure.modeles import AppointmentModel
+
+    id_patient = (
+        await db.execute(
+            select(AppointmentModel.id_patient).where(AppointmentModel.id == id_rendez_vous)
+        )
+    ).scalar_one_or_none()
+    if id_patient is None:
+        raise HTTPException(
+            status_code=statut.HTTP_404_NOT_FOUND, detail="Rendez-vous introuvable"
+        )
+
     uc = CreateInvoiceUseCase(billing_repo)
-    # Récupération du id_patient depuis le RDV — simplifié ici avec la valeur fournie
-    # En production, une jointure avec la table appointments serait effectuée
     elements = [item.model_dump() for item in payload.items]
     try:
         record = await uc.execute(
             id_rendez_vous=id_rendez_vous,
-            id_patient=current_user["id"],  # simplifié
+            id_patient=id_patient,
             items=elements,
             montant_remise=payload.montant_remise,
             notes=payload.notes,

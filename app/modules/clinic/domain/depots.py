@@ -25,6 +25,7 @@ class AbstractClinicRepository(ABC):
         id_categorie: Optional[int] = None,
         search: Optional[str] = None,
         est_mis_en_avant: Optional[bool] = None,
+        inclure_inactifs: bool = False,
     ) -> tuple[list[Clinic], int]:
         ...
 

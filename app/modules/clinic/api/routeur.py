@@ -335,6 +335,33 @@ async def rate_doctor(
 
 # ── Admin — Gestion des cliniques ────────────────────────────────────────────
 
+@router.get(
+    "/admin/cliniques",
+    response_model=Page[ClinicSchema],
+    dependencies=[Depends(_admin_dep)],
+)
+async def admin_list_clinics(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    repo: SQLClinicRepository = Depends(_clinic_repo),
+) -> Page[ClinicSchema]:
+    # Contrairement à GET /cliniques (public), inclut les cliniques désactivées :
+    # sinon un admin qui désactive une clinique la perd de vue et ne peut plus
+    # la réactiver.
+    params = PaginationParams(page=page, per_page=per_page)
+    page_result = await ListClinicsUseCase(repo).execute(
+        params, search=search, inclure_inactifs=True,
+    )
+    return Page[ClinicSchema](
+        data=[ClinicSchema.model_validate(c.__dict__) for c in page_result.data],
+        total=page_result.total,
+        page=page_result.page,
+        per_page=page_result.per_page,
+        total_pages=page_result.total_pages,
+    )
+
+
 @router.post(
     "/admin/cliniques",
     response_model=ClinicSchema,

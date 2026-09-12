@@ -51,10 +51,12 @@ class ListClinicsUseCase:
         id_categorie: Optional[int] = None,
         search: Optional[str] = None,
         est_mis_en_avant: Optional[bool] = None,
+        inclure_inactifs: bool = False,
     ) -> Page[Clinic]:
         data, total = await self._repo.list_paginated(
             params, id_ville=id_ville, id_categorie=id_categorie,
             search=search, est_mis_en_avant=est_mis_en_avant,
+            inclure_inactifs=inclure_inactifs,
         )
         return Page.create(data, total, params)
 

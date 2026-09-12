@@ -199,11 +199,15 @@ class SQLClinicRepository(AbstractClinicRepository):
         id_categorie: Optional[int] = None,
         search: Optional[str] = None,
         est_mis_en_avant: Optional[bool] = None,
+        inclure_inactifs: bool = False,
     ) -> tuple[list[Clinic], int]:
-        base = select(ClinicModel).where(
-            ClinicModel.deleted_at.is_(None),
-            ClinicModel.est_actif.is_(True),
-        )
+        # inclure_inactifs=True (vue admin) : ne pas filtrer sur est_actif, sinon
+        # une clinique désactivée disparaît de la liste et devient impossible à
+        # réactiver depuis l'interface d'administration.
+        conditions = [ClinicModel.deleted_at.is_(None)]
+        if not inclure_inactifs:
+            conditions.append(ClinicModel.est_actif.is_(True))
+        base = select(ClinicModel).where(*conditions)
         if id_ville is not None:
             base = base.where(ClinicModel.id_ville == id_ville)
         if est_mis_en_avant is not None:
