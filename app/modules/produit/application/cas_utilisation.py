@@ -184,6 +184,7 @@ class ListProductsUseCase:
         min_price: Decimal | None = None,
         max_price: Decimal | None = None,
         est_mis_en_avant: bool | None = None,
+        inclure_inactifs: bool = False,
     ) -> Page[Product]:
         products, total = await self._repo.list_paginated(
             params=params,
@@ -192,6 +193,7 @@ class ListProductsUseCase:
             search=search,
             min_price=min_price,
             max_price=max_price,
+            inclure_inactifs=inclure_inactifs,
             est_mis_en_avant=est_mis_en_avant,
         )
         return Page.create(data=products, total=total, params=params)

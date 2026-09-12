@@ -505,6 +505,27 @@ async def cancel_order(
 # ---------------------------------------------------------------------------
 
 
+@router.get(
+    "/admin/produits",
+    response_model=Page[ProductListSchema],
+    tags=["Admin - Produits"],
+    dependencies=[Depends(require_role("admin", "super-admin"))],
+)
+async def admin_list_products(
+    search: Annotated[str | None, Query(description="Recherche textuelle")] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = 20,
+    repo: SQLAlchemyProductRepository = Depends(_product_repo),
+) -> Page[ProductListSchema]:
+    # Contrairement à GET /produits (public), inclut les produits désactivés :
+    # sinon un produit désactivé disparaît de la liste admin et devient
+    # impossible à réactiver depuis l'interface.
+    params = PaginationParams(page=page, per_page=per_page)
+    uc = ListProductsUseCase(repo)
+    result = await uc.execute(params=params, search=search, inclure_inactifs=True)
+    return result  # type: ignore[return-valeur]
+
+
 @router.post(
     "/admin/produits",
     response_model=ProductDetailSchema,

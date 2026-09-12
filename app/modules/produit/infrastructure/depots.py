@@ -467,11 +467,15 @@ class SQLAlchemyProductRepository(ProductRepository):
         min_price: Decimal | None = None,
         max_price: Decimal | None = None,
         est_mis_en_avant: bool | None = None,
+        inclure_inactifs: bool = False,
     ) -> tuple[list[Product], int]:
-        base_q = select(ProductModel).where(
-            ProductModel.deleted_at.is_(None),
-            ProductModel.est_actif.is_(True),
-        )
+        # inclure_inactifs=True (vue admin) : sinon un produit désactivé disparaît
+        # de la liste admin et devient impossible à réactiver (même bug que
+        # rencontré et corrigé sur les cliniques).
+        conditions = [ProductModel.deleted_at.is_(None)]
+        if not inclure_inactifs:
+            conditions.append(ProductModel.est_actif.is_(True))
+        base_q = select(ProductModel).where(*conditions)
         if id_categorie is not None:
             base_q = base_q.where(ProductModel.id_categorie == id_categorie)
         if id_marque is not None:

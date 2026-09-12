@@ -117,6 +117,7 @@ class ProductRepository(ABC):
         min_price: Decimal | None = None,
         max_price: Decimal | None = None,
         est_mis_en_avant: bool | None = None,
+        inclure_inactifs: bool = False,
     ) -> tuple[list[Product], int]:
         ...
 
